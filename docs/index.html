@@ -1,0 +1,1980 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://uttamkinih.github.io/">
+<meta property="og:title" content="Uttam Kini H · Senior Software Engineer">
+<meta property="og:description" content="Flutter apps and the NestJS backends behind them. Explore my work as a toy city, or read the one-page resume.">
+<meta property="og:image" content="https://uttamkinih.github.io/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Uttam Kini H · Senior Software Engineer">
+<meta name="twitter:description" content="Flutter apps and the NestJS backends behind them. Explore my work as a toy city, or read the one-page resume.">
+<meta name="twitter:image" content="https://uttamkinih.github.io/og.png">
+<style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}[hidden]{display:none!important}</style>
+<title>Uttam Kini H · Senior Software Engineer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Uttam Kini H, Senior Software Engineer in Bengaluru: Flutter apps and the NestJS backends behind them. Explore the work as a toy city, or read the one-page resume.">
+<script>
+  // Day or night is shared with the case study pages.
+  // Light by default; night only when the visitor picked it (on this page or another one of the site).
+  { let t = null; try { t = localStorage.getItem("toycity.theme"); } catch {} document.documentElement.dataset.theme = t === "dark" ? "dark" : "light"; }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: full-bleed WebGL toy city with a floating HUD; details slide in from the right (desktop) or up from the bottom (phone); recruiter mode swaps the city for a one-column resume built from the same data. */
+:root {
+  --sky: #e2f0f7;
+  --surface: #ffffff;
+  --surface-2: #eef4f8;
+  --ink: #16202f;
+  --muted: #56667c;
+  --line: rgba(22, 32, 47, 0.12);
+  --accent: #ff6a3d;
+  --accent-ink: #16202f;
+  --accent-text: #c2410c;
+  --focus: #c4461b;
+  --label-bg: rgba(255, 255, 255, 0.94);
+  --label-ink: #16202f;
+  --shadow: 0 12px 32px rgba(22, 40, 70, 0.16);
+  --font-display: "Fredoka", ui-rounded, "Avenir Next", system-ui, sans-serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --sky: #0b1424; --surface: #131e31; --surface-2: #1b283e; --ink: #e9eff8; --muted: #9aabc1;
+    --line: rgba(233, 239, 248, 0.12); --accent: #ff8659; --accent-ink: #1c0c04; --accent-text: #ff8659; --focus: #ff8659;
+    --label-bg: rgba(19, 30, 49, 0.92); --label-ink: #e9eff8; --shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --sky: #0b1424; --surface: #131e31; --surface-2: #1b283e; --ink: #e9eff8; --muted: #9aabc1;
+  --line: rgba(233, 239, 248, 0.12); --accent: #ff8659; --accent-ink: #1c0c04; --accent-text: #ff8659; --focus: #ff8659;
+  --label-bg: rgba(19, 30, 49, 0.92); --label-ink: #e9eff8; --shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--sky); color: var(--ink); font: 15px/1.55 var(--font-body); -webkit-font-smoothing: antialiased; }
+body:not(.mode-resume) { overflow: hidden; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2.5px solid var(--focus); outline-offset: 2px; }
+code { font-family: var(--font-mono); font-size: 0.88em; }
+
+/* ---------- city shell ---------- */
+#city { position: fixed; inset: 0; }
+body.mode-resume #city { display: none; }
+#scene { position: absolute; inset: 0; z-index: 0; touch-action: none; } /* own stacking context: label z-indexes stay under the HUD and panel */
+#scene canvas { display: block; outline: none; }
+.labels { position: absolute; inset: 0; pointer-events: none; }
+.label {
+  pointer-events: auto; cursor: pointer; white-space: nowrap; border: 0;
+  display: inline-flex; align-items: center; gap: 6px;
+  font: 600 13px/1 var(--font-display); letter-spacing: 0.01em;
+  color: var(--label-ink); background: var(--label-bg);
+  padding: 7px 12px 7px 9px; border-radius: 999px; box-shadow: 0 4px 14px rgba(10, 20, 40, 0.18);
+  transition: transform 0.2s, background 0.2s, color 0.2s;
+}
+.label::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--dot, var(--accent)); }
+.label.sm { font: 600 11px/1 var(--font-body); padding: 5px 9px; }
+.label.sm::before { display: none; }
+.label:hover, .label.is-hot { background: var(--accent); color: var(--accent-ink); transform: translateY(-3px); }
+.label:hover::before, .label.is-hot::before { background: currentColor; }
+
+.hud {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 3; pointer-events: none;
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
+  padding-top: max(12px, env(safe-area-inset-top, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.hud > * { pointer-events: auto; }
+.hud-left { display: grid; gap: 6px; justify-items: start; min-width: 0; }
+.brand { background: var(--surface); border-radius: 14px; padding: 9px 14px; box-shadow: var(--shadow); line-height: 1.15; }
+.brand b { display: block; font: 700 19px/1.1 var(--font-display); }
+.brand span { font-size: 12px; color: var(--muted); font-weight: 600; }
+.activity {
+  display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border-radius: 999px;
+  background: var(--surface); box-shadow: var(--shadow); font: 500 11px/1 var(--font-mono); color: var(--muted); white-space: nowrap;
+}
+.activity b { color: var(--ink); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: #35c26b; box-shadow: 0 0 0 0 rgba(53, 194, 107, 0.5); animation: pulse 2s infinite; flex: none; }
+.dot.sample { background: var(--muted); animation: none; }
+@keyframes pulse { 70% { box-shadow: 0 0 0 7px rgba(53, 194, 107, 0); } 100% { box-shadow: 0 0 0 0 rgba(53, 194, 107, 0); } }
+.hud-right { display: flex; gap: 8px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px;
+  padding: 9px 15px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--ink); font: 600 14px/1 var(--font-body); text-decoration: none; cursor: pointer; white-space: nowrap;
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.hud .btn { box-shadow: var(--shadow); border-color: transparent; }
+.icon-btn {
+  width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--line); color: var(--ink);
+}
+.hud .icon-btn { box-shadow: var(--shadow); border-color: transparent; }
+.icon-btn svg { width: 19px; height: 19px; }
+.short { display: none; }
+
+.chips {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; gap: 8px; justify-content: center;
+  overflow-x: auto; scrollbar-width: none; transition: opacity 0.25s;
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 0px)); padding-top: 8px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: none; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  padding: 10px 15px; border-radius: 999px; border: 0; background: var(--surface); color: var(--ink);
+  font: 600 14px/1 var(--font-display); box-shadow: var(--shadow);
+}
+.chip::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--dot); }
+.chip[aria-current="true"] { background: var(--ink); color: var(--sky); }
+
+.mapctl { position: absolute; z-index: 3; display: grid; gap: 6px; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(max(16px, env(safe-area-inset-bottom, 0px)) + 64px); }
+.mapctl .icon-btn { box-shadow: var(--shadow); border-color: transparent; width: 44px; height: 44px; }
+/* keep the district chips clear of the open detail panel */
+@media (min-width: 721px) { body.panel-open .chips { right: calc(min(400px, 42vw) + 32px); justify-content: flex-start; flex-wrap: wrap; } }
+@media (pointer: coarse) { .chip { min-height: 44px; } }
+.mapctl .walk-btn[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+body.walking .mapctl [data-map] { display: none; }
+
+/* walk mode: street-level camera */
+.stick {
+  position: absolute; z-index: 3; display: none; width: 124px; height: 124px; border-radius: 50%; touch-action: none;
+  right: max(20px, env(safe-area-inset-right, 0px)); bottom: calc(max(16px, env(safe-area-inset-bottom, 0px)) + 70px);
+  background: color-mix(in srgb, var(--surface) 55%, transparent); border: 2px solid var(--line); box-shadow: var(--shadow);
+}
+.stick i { position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 50%; background: var(--surface); box-shadow: var(--shadow); pointer-events: none; }
+body.walking.touch .stick { display: block; }
+.walk-open {
+  position: absolute; z-index: 3; left: 50%; transform: translateX(-50%); display: none; align-items: center; gap: 10px;
+  bottom: calc(max(16px, env(safe-area-inset-bottom, 0px)) + 64px); max-width: calc(100% - 32px);
+  padding: 12px 18px; border-radius: 999px; border: 0; cursor: pointer; box-shadow: var(--shadow);
+  background: var(--accent); color: var(--accent-ink); font: 600 15px/1.2 var(--font-display);
+}
+.walk-open b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.walk-open kbd { font: 600 12px/1 var(--font-mono); padding: 4px 7px; border-radius: 6px; background: var(--accent-ink); color: var(--accent); }
+body.walking .walk-open.show { display: inline-flex; }
+body.walking.touch .walk-open { left: max(16px, env(safe-area-inset-left, 0px)); transform: none; max-width: calc(100% - 180px); bottom: calc(max(16px, env(safe-area-inset-bottom, 0px)) + 118px); font-size: 14px; }
+body.walking.touch .walk-open kbd { display: none; }
+body.walking.touch .hint { top: calc(max(12px, env(safe-area-inset-top, 0px)) + 72px); bottom: auto; }
+body.panel-open .walk-open, body.panel-open .stick { display: none !important; }
+.fade { position: absolute; inset: 0; z-index: 4; background: var(--sky); opacity: 0; pointer-events: none; transition: opacity 0.18s; }
+.fade.on { opacity: 1; }
+.career { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 12px; border-left: 2px solid var(--line); }
+.career li { padding-left: 14px; position: relative; }
+.career li::before { content: ""; position: absolute; left: -6px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+.career li:not(:first-child)::before { background: var(--surface-2); border: 2px solid var(--line); }
+.career b { display: block; font: 600 16px/1.3 var(--font-display); }
+.career small { display: block; color: var(--muted); font-size: 13px; margin-bottom: 4px; }
+.hint {
+  position: absolute; left: 50%; z-index: 3; transform: translateX(-50%); margin: 0;
+  top: calc(max(12px, env(safe-area-inset-top, 0px)) + 104px);
+  padding: 9px 14px; border-radius: 999px; background: var(--ink); color: var(--sky);
+  font: 600 13px/1.2 var(--font-body); white-space: nowrap; box-shadow: var(--shadow);
+  transition: opacity 0.5s;
+}
+.hint.gone { opacity: 0; pointer-events: none; }
+
+/* ---------- detail panel ---------- */
+#panel {
+  position: absolute; z-index: 5; display: flex; flex-direction: column;
+  background: var(--surface); color: var(--ink); box-shadow: var(--shadow);
+  visibility: hidden; transition: transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s linear 0.38s;
+}
+#panel.open { visibility: visible; transform: none; transition-delay: 0s; }
+.panel-head { display: flex; justify-content: flex-end; align-items: center; padding: 10px 10px 0; position: relative; }
+.grabber { display: none; }
+#panel-body { overflow-y: auto; overscroll-behavior: contain; padding: 0 22px 24px; }
+@media (min-width: 721px) {
+  #panel { top: 72px; right: 16px; bottom: 16px; width: min(400px, 42vw); border-radius: 22px; transform: translateX(calc(100% + 32px)); }
+}
+@media (max-width: 720px) {
+  #panel {
+    left: 0; right: 0; bottom: 0; max-height: 60%; border-radius: 22px 22px 0 0; transform: translateY(105%);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  #panel-body { padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+  .grabber { display: block; position: absolute; left: 50%; top: 8px; width: 40px; height: 5px; margin-left: -20px; border-radius: 3px; background: var(--line); }
+  body.panel-open .chips { opacity: 0; pointer-events: none; }
+  body.panel-open .mapctl { opacity: 0; pointer-events: none; }
+  .chips { justify-content: flex-start; }
+  .long { display: none; }
+  .short { display: inline; }
+  .brand b { font-size: 17px; }
+  .proj-head .device { --w: 84px; }
+  .hint { top: auto; bottom: calc(max(16px, env(safe-area-inset-bottom, 0px)) + 64px); }
+}
+
+.eyebrow { margin: 0 0 6px; font: 500 11px/1.2 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-text); }
+#panel h2, #resume h2 { font: 600 28px/1.1 var(--font-display); margin: 0 0 4px; text-wrap: balance; }
+#panel h3, #resume h3.group { margin: 18px 0 8px; font: 500 11px/1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.lede { margin: 0 0 12px; color: var(--muted); font-weight: 600; }
+#panel p { margin: 0 0 12px; }
+.facts { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; margin: 16px 0; }
+.facts div { background: var(--surface-2); border-radius: 12px; padding: 10px 12px; min-width: 0; }
+.facts dt { font-size: 12px; color: var(--muted); line-height: 1.25; }
+.facts dd { margin: 0 0 2px; font: 600 clamp(19px, 5.4vw, 24px)/1.1 var(--font-display); font-variant-numeric: tabular-nums; order: -1; }
+.facts div { display: flex; flex-direction: column; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.credit { font-size: 12px; color: var(--muted); margin-top: 20px !important; }
+.back { background: none; border: 0; padding: 4px 0; margin-bottom: 8px; color: var(--muted); font: 600 13px var(--font-body); cursor: pointer; }
+.back:hover { color: var(--accent); }
+.rows { display: grid; gap: 8px; margin-top: 14px; }
+.row {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; cursor: pointer;
+  padding: 10px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface);
+}
+.row:hover { border-color: var(--accent); }
+.row > span:nth-child(2) { flex: 1; min-width: 0; }
+.row b { display: block; font: 600 16px/1.25 var(--font-display); }
+.row small { display: block; color: var(--muted); font-size: 13px; }
+.chev { color: var(--muted); font-size: 22px; line-height: 1; }
+a.row { color: inherit; text-decoration: none; align-items: flex-start; }
+a.row small + small { margin-top: 4px; color: var(--ink); }
+.art-ico { width: 44px; height: 44px; flex: none; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: var(--surface-2); color: var(--muted); font: 600 13px/1 var(--font-mono); }
+.art-ico svg { width: 20px; height: 20px; }
+.crane-ico { width: 56px; height: 56px; flex: none; border-radius: 12px; background: repeating-linear-gradient(-45deg, var(--accent) 0 7px, var(--surface-2) 7px 14px); }
+.ticks { list-style: none; padding: 0; margin: 0 0 14px; display: grid; gap: 6px; }
+.ticks li { position: relative; padding-left: 18px; }
+.ticks li::before { content: ""; position: absolute; left: 2px; top: 0.6em; width: 7px; height: 7px; border-radius: 2px; background: var(--accent); }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tags span { font: 500 12px/1 var(--font-mono); padding: 6px 9px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--line); }
+.case-btn { width: 100%; margin: 2px 0 14px; }
+.badge { display: inline-block; margin-top: 4px; padding: 3px 8px; border-radius: 999px; border: 1px dashed var(--muted); color: var(--muted); font: 500 11px/1.3 var(--font-mono); }
+.proj-head { display: flex; gap: 16px; align-items: flex-end; margin-bottom: 14px; }
+.proj-head > div { min-width: 0; }
+.note { font-size: 13px; color: var(--muted); background: var(--surface-2); padding: 10px 12px; border-radius: 12px; }
+.timeline { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 8px; }
+.edu { padding: 12px 0; border-top: 1px solid var(--line); }
+.edu b { display: block; font: 600 17px/1.3 var(--font-display); }
+.edu span { color: var(--muted); font-size: 14px; }
+.edu p { margin: 6px 0 0 !important; }
+.copyline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 4px 0 0; }
+.copyline code { padding: 10px 12px; background: var(--surface-2); border-radius: 10px; user-select: all; min-width: 0; overflow-wrap: anywhere; }
+
+/* phone frame used for project previews */
+.device {
+  --w: 128px; width: var(--w); max-width: 100%; aspect-ratio: 9 / 19; flex: none; padding: calc(var(--w) * 0.045);
+  border-radius: calc(var(--w) * 0.2); background: #0e131b; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22), inset 0 0 0 1.5px #2b3442;
+}
+.device.sm { --w: 54px; }
+.screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: calc(var(--w) * 0.16); background: linear-gradient(160deg, var(--c1), var(--c2)); }
+.screen video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fake { position: absolute; inset: 0; padding: 18% 9% 0; display: flex; flex-direction: column; gap: 5%; animation: fk 7s ease-in-out infinite alternate; }
+.fake i { display: block; flex: none; border-radius: calc(var(--w) * 0.04); background: rgba(255, 255, 255, 0.78); }
+.fake .fk-bar { height: 4%; width: 55%; }
+.fake .fk-hero { height: 22%; background: rgba(255, 255, 255, 0.4); }
+.fake .fk-row { height: 3.5%; }
+.fake .fk-row.s { width: 60%; }
+.fake .fk-card { height: 13%; background: rgba(255, 255, 255, 0.58); }
+@keyframes fk { to { transform: translateY(-34%); } }
+
+/* ---------- loader ---------- */
+#loader {
+  position: absolute; inset: 0; z-index: 10; display: grid; place-items: center; background: var(--sky);
+  transition: opacity 0.6s, visibility 0s linear 0.6s;
+}
+#loader.done { opacity: 0; visibility: hidden; }
+.loader-inner { display: grid; justify-items: center; gap: 14px; text-align: center; padding: 0 16px; }
+.blocks { display: flex; align-items: flex-end; gap: 6px; height: 54px; }
+.blocks i { width: 18px; border-radius: 5px; background: var(--accent); animation: rise 1.2s ease-in-out infinite; }
+.blocks i:nth-child(1) { height: 24px; }
+.blocks i:nth-child(2) { height: 44px; animation-delay: 0.15s; background: var(--ink); }
+.blocks i:nth-child(3) { height: 32px; animation-delay: 0.3s; }
+@keyframes rise { 50% { transform: translateY(-8px); } }
+.loading-text { margin: 0; font: 600 16px var(--font-display); }
+.fail { display: none; }
+#loader.failed .fail { display: grid; gap: 12px; justify-items: center; }
+#loader.failed .blocks, #loader.failed .loading-text, #loader.failed .skip { display: none; }
+
+/* ---------- recruiter mode ---------- */
+#resume {
+  min-height: 100%; padding-block: 36px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.r-wrap { max-width: 860px; margin: 0 auto; display: grid; gap: 44px; }
+.r-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 20px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+.r-head > div { min-width: 0; }
+.r-head h1 { margin: 0 0 6px; font: 700 clamp(40px, 9vw, 68px)/1 var(--font-display); letter-spacing: -0.01em; }
+.r-sum { max-width: 58ch; margin: 0 0 12px; }
+.r-facts { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0 0 12px; font-size: 14px; color: var(--muted); }
+.r-facts a { color: var(--accent-text); font-weight: 600; }
+.r-proj .ticks { margin: 8px 0 10px; }
+.r-live { display: inline-flex; align-items: center; gap: 8px; margin: 0; font: 500 12px/1.3 var(--font-mono); color: var(--muted); }
+.r-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+#resume section > h2 { font-size: 24px; margin-bottom: 14px; }
+.r-proj { display: flex; gap: 16px; padding: 16px 0; border-top: 1px solid var(--line); }
+.r-proj .device { --w: 76px; }
+.r-proj > div { min-width: 0; }
+.r-proj h3, .r-item h3 { margin: 0; font: 600 19px/1.25 var(--font-display); }
+.r-meta { margin: 2px 0 8px; color: var(--muted); font-size: 14px; }
+.r-proj p, .r-item p { margin: 0 0 10px; }
+.r-proj .actions { margin-top: 12px; }
+.r-proj .btn { min-height: 34px; padding: 7px 12px; font-size: 13px; }
+.r-item { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 16px; padding: 16px 0; border-top: 1px solid var(--line); }
+.r-when { font: 500 13px/1.5 var(--font-mono); color: var(--muted); padding-top: 2px; font-variant-numeric: tabular-nums; }
+.r-skills { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 4px 20px; }
+#resume h3.group { margin-top: 0; }
+.r-foot { font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; }
+@media (max-width: 560px) { .r-item { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+
+#toast {
+  position: fixed; left: 50%; z-index: 20; transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+  bottom: calc(max(16px, env(safe-area-inset-bottom, 0px)) + 8px);
+  padding: 10px 16px; border-radius: 12px; background: var(--ink); color: var(--sky); font-weight: 600;
+  transition: opacity 0.25s, transform 0.25s;
+}
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+@media (prefers-reduced-motion: reduce) {
+  .fake, .blocks i, .dot { animation: none; }
+  #panel, .label, #toast, .hint, .fade { transition: none; }
+}
+</style>
+
+</head>
+<body>
+<div id="city">
+  <div id="scene"></div>
+  <header class="hud">
+    <div class="hud-left">
+      <div class="brand"><b id="brand-name"></b><span id="brand-role"></span></div>
+      <div class="activity" id="activity" hidden></div>
+    </div>
+    <div class="hud-right">
+      <button class="icon-btn" id="theme-btn" data-theme-toggle type="button" aria-label="Switch to night"></button>
+      <button class="btn primary" data-mode="resume" type="button"><span class="long">Recruiter mode</span><span class="short">Resume</span></button>
+    </div>
+  </header>
+  <p class="hint gone" id="hint"></p>
+  <nav class="chips" id="chips" aria-label="Districts"></nav>
+  <div class="mapctl" role="group" aria-label="Map view">
+    <button class="icon-btn" type="button" data-map="in" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 2v12M2 8h12"/></svg></button>
+    <button class="icon-btn" type="button" data-map="out" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 8h10"/></svg></button>
+    <button class="icon-btn walk-btn" type="button" data-walk aria-pressed="false" aria-label="Walk around the city" title="Walk around the city"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="2.6" r="1.4"/><path d="M8.6 5.2 7.2 9.4l2.6 1.8.7 3.6M7.6 7.9 5 9.2M9.1 6.4l1.6 1.8 2.1.4M7.2 9.4l-1.6 4.4"/></svg></button>
+    <button class="icon-btn" type="button" data-map="home" aria-label="Reset the view" title="Reset the view"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="3"/><circle cx="8" cy="8" r="1" fill="currentColor"/></svg></button>
+  </div>
+  <div class="stick" id="stick" aria-hidden="true"><i></i></div>
+  <button class="walk-open" id="walk-open" type="button"><b></b><kbd>E</kbd></button>
+  <div class="fade" id="fade" aria-hidden="true"></div>
+  <aside id="panel" aria-label="Details" aria-hidden="true" inert>
+    <div class="panel-head"><span class="grabber" aria-hidden="true"></span><button class="icon-btn" data-close type="button" aria-label="Close details"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div id="panel-body"></div>
+  </aside>
+  <div id="loader">
+    <div class="loader-inner">
+      <div class="blocks" aria-hidden="true"><i></i><i></i><i></i></div>
+      <p class="loading-text">Building the city…</p>
+      <button class="btn skip" data-mode="resume" type="button">Skip to the resume</button>
+      <div class="fail">
+        <p>The 3D city couldn't start on this device.</p>
+        <button class="btn primary" data-mode="resume" type="button">Open recruiter mode</button>
+      </div>
+    </div>
+  </div>
+</div>
+<main id="resume" hidden></main>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+
+<script>
+/* ======================================================================
+   CONTENT: the only part you edit to update the portfolio.
+   The city builds one tower per project (up to 3, tallest first) and one office per job (up to 3).
+   ====================================================================== */
+const CONTENT = {
+  name: "Uttam Kini H",
+  role: "Senior Software Engineer",
+  place: "Bengaluru, India",
+  yearsLine: "4+ years building production Flutter apps",
+  summary: "Senior software engineer at GeekyAnts in Bengaluru. For four years I have built production Flutter apps that keep working under load and through network outages: kiosk apps, live scoreboards, offline sync, and the backend that feeds them.",
+  github: "UttamkiniH", // live commit numbers work when the page is hosted on your own domain
+  facts: [
+    { value: "4+", label: "Years shipping Flutter" },
+    { value: "11.6K+", label: "Players on the platform I build" },
+    { value: "99.9%", label: "Kiosk session stability" },
+  ],
+  links: { email: "huttamkini23@gmail.com", github: "https://github.com/UttamkiniH", linkedin: "https://www.linkedin.com/in/uttam-kini", resumePdf: "" },
+  contactNote: "Based in Bengaluru. Open to Flutter and mobile engineering roles. Email reaches me fastest.",
+  projects: [
+    {
+      name: "CoreSports", tagline: "Real-time sports gaming: kiosk app, live scoreboards and the backend behind them", year: "2022 – now", role: "Flutter and full-stack engineer, GeekyAnts",
+      description: "CoreSports is a real-time sports gaming platform in the US with 11,600+ players. I built the Flutter kiosk app and the IoT scoreboard displays, and as the only full-stack engineer I own the platform end to end.",
+      highlights: [
+        "Replaced an event-driven kiosk flow with a finite state machine, removing race conditions across 25,000+ monthly sessions (99.9% session stability)",
+        "Reward pipeline in NestJS and BullMQ: three idempotency guards keep 123K+ coin and XP transactions from paying twice; the case study shows the counters that can still double",
+        "Redis Pub/Sub scoring that has processed 1.25M+ game events across Flutter clients and scoreboards",
+        "Custom router for the Flutter Web client that fixed back/forward desync with go_router; reported the framework bug upstream",
+        "Built an offline-first score sync engine for kiosk outages; it caused score discrepancies, so the client retired it. Battle Royale still re-posts scores saved offline",
+      ],
+      stack: ["Flutter", "Riverpod", "Provider", "NestJS", "Redis", "BullMQ", "PostgreSQL", "Fastlane"],
+      links: [{ label: "Flutter issue #164969", href: "https://github.com/flutter/flutter/issues/164969" }],
+      caseStudy: "coresports.html", // interactive walkthrough: one score from the wall to the reward
+      caseStudyLabel: "Trace a score end to end, in 3D",
+      video: "", // path to a short screen recording published next to this page, e.g. "media/kiosk.mp4"
+      color: "#8bb8ea", accent: "#ff8a5c", screen: ["#3d6fe0", "#9fd0ff"],
+    },
+    {
+      name: "My Ohana family tree", tagline: "A family tree drawn from relationships", year: "2026", role: "Flutter lead, GeekyAnts",
+      description: "My Ohana is a Flutter app where families build a shared tree. I wrote the layout engines that turn a list of people and their relationships into a drawn tree: where each person sits and how every line runs.",
+      highlights: [
+        "Pure-Dart layout engine that places people on a grid of quarter-width slots and routes partner, parent and child lines, staggering parent buses that would overlap",
+        "Screen readers read members row by row, oldest generation first, in either layout",
+        "A second, vertical layout: an indented chart, oldest generation first, that opens on you",
+        "Tap a person and their partners, parents and children stay bright while the rest of the tree dims",
+      ],
+      stack: ["Flutter", "Dart", "BLoC", "CustomPainter", "freezed"],
+      links: [],
+      caseStudy: "ohana.html", // playground: tap people, add relatives, watch the layout engine
+      caseStudyLabel: "Play with the family tree and its engines",
+      video: "",
+      color: "#9fd4ad", accent: "#2f7d5b", screen: ["#1f9a6c", "#c2f2d4"],
+    },
+    {
+      name: "Treap index", tagline: "In-memory index built on treaps", year: "2025", role: "Personal project",
+      description: "An in-memory index built on a treap: a binary search tree that stays balanced in expectation through random priorities, with simpler rebalancing rules than AVL or red-black trees.",
+      highlights: [
+        "Random priorities keep the max-heap property, so the tree is balanced in expectation",
+        "Expected O(log N) search, insert and delete, with fewer than two rotations per insert on average",
+      ],
+      stack: ["C++", "Data structures"],
+      links: [{ label: "Source", href: "https://github.com/UttamkiniH/Tree-Heap" }],
+      video: "",
+      color: "#f3cf7a", accent: "#c65d3b", screen: ["#ee8a3a", "#ffe2aa"],
+    },
+  ],
+  learn: {
+    title: "Flutter interview guide",
+    url: "https://blocguide.vercel.app",
+    summary: "A free guide I write for Flutter developers getting ready for interviews. Each module explains one topic from the ground up, shows it working in a real app, then has you build it and explain it out loud.",
+    modules: ["Top 40 answers", "Architecture", "State management", "Networking and data", "Config and release", "Auth and security", "Dart in depth", "Flutter internals", "Navigation", "Testing", "Performance", "Platform integration", "DSA by pattern", "Machine coding rounds", "Mobile system design", "Project stories"],
+    count: 16,
+    // Social login from the backend's side: the guide's Backend tab.
+    backend: {
+      title: "Backend notes: social login",
+      url: "https://blocguide.vercel.app/backend.html",
+      live: true,
+      summary: "Twelve short lessons on what happens behind a Google or Apple sign-in: verifying the ID token, finding or creating the user, why the backend issues its own JWT, the authorization code flow, and what state, PKCE and nonce each protect against.",
+    },
+  },
+  // Published on the GeekyAnts blog, newest first.
+  articles: [
+    {
+      title: "How We Engineered a Three-Path Reward Processing System for a Real-Time Sports Platform",
+      url: "https://geekyants.com/blog/how-we-engineered-a-three-path-reward-processing-system-for-a-real-time-sports-platform",
+      date: "Oct 2026", topics: ["NestJS", "PostgreSQL", "BullMQ"],
+      summary: "The CoreSports reward design: rewards inside the score transaction, a BullMQ worker for achievements and missions, cron jobs for leaderboard payouts, the idempotency guards, and the risks I chose to accept.",
+    },
+    {
+      title: "Offline-First Flutter: Implementation Blueprint for Real-World Apps",
+      url: "https://geekyants.com/blog/offline-first-flutter-implementation-blueprint-for-real-world-apps",
+      date: "Nov 2025", topics: ["Flutter", "Drift", "Sync"],
+      summary: "The local database as the source of truth, a transactional outbox for every change, a sync engine with backoff and jitter, conflict strategies, and encryption at rest.",
+    },
+    {
+      title: "Advanced Navigation in Flutter Web: A Deep Dive with Go Router",
+      url: "https://geekyants.com/blog/advanced-navigation-in-flutter-web-a-deep-dive-with-go-router",
+      date: "Jun 2025", with: "Prince Kumar Thakur", topics: ["Flutter web", "go_router"],
+      summary: "ShellRoute for a shell that stays put, redirect() guards that remember where you were going, path and query parameters, and workarounds for go_router's known issues on the web.",
+    },
+  ],
+  // From LinkedIn. Roles oldest first: the company's tower gets a floor per level,
+  // and the senior track starts a new tier above a balcony.
+  experience: [
+    {
+      company: "GeekyAnts", period: "Aug 2022 – now", place: "Bengaluru · hybrid", color: "#bcd5ef", accent: "#2fa37f",
+      roles: [
+        { title: "Software Engineer Trainee", track: "trainee", period: "Aug 2022 – Feb 2023", points: ["Apprenticeship: Node.js and Swift alongside Flutter on client work"] },
+        { title: "Software Engineer I", track: "engineer", level: 1, period: "Mar 2023 – Sep 2025",
+          points: ["Modernised navigation in an enterprise Flutter and JavaScript app: deep links, dynamic routing and auth redirects; browser navigation 67% faster with in-memory state", "Automated Play Store releases with a CircleCI, Fastlane and Firebase pipeline, cutting time to market by 33%"] },
+        { title: "Software Engineer III", track: "engineer", level: 3, period: "Oct 2025 – Sep 2026",
+          points: ["Promoted from Software Engineer I straight to Software Engineer III", "Rebuilt the kiosk game loop as a finite state machine, removing invalid state transitions and taking crashes in the main gameplay loop to near zero", "Designed the real-time scoring and display system for CoreSports (10,000+ users in the US) with Riverpod and Redis Pub/Sub, so scoreboards and touch TVs update in sync"] },
+        { title: "Senior Software Engineer 1", track: "senior", level: 1, period: "Oct 2026 – now",
+          points: ["Lead Flutter development for My Ohana, a family-history app: the interactive family tree with map view, and Scrolls, a photo and video feed with collages, the native photo picker and an in-app photo editor", "Plan and split feature work into phases, review code, and test on iOS and Android before release, across Flutter, NestJS and Next.js apps in a pnpm monorepo"] },
+      ],
+      stack: ["Flutter", "Dart", "Riverpod", "Redis", "NestJS", "CircleCI", "Fastlane"],
+    },
+    {
+      company: "Cognizant", period: "Mar 2022 – Jul 2022", place: "Internship", color: "#ead5bb", accent: "#c27a2e",
+      roles: [{ title: "Programming Analyst (intern)", track: "intern", period: "Mar 2022 – Jul 2022", points: [] }],
+      stack: ["HTML", "JavaScript"],
+    },
+  ],
+  community: [
+    { role: "Community Lead", org: "Google Developer Student Clubs", period: "Sep 2020 – Jul 2022" },
+    { role: "Technical Lead", org: "ACM-Sahyadri", period: "Aug 2020 – Jul 2022" },
+  ],
+  education: [
+    { degree: "B.E. in Information Science and Engineering", school: "Sahyadri College of Engineering & Management", period: "2018 – 2022", note: "CGPA 8.20" },
+  ],
+  skills: [
+    { group: "Mobile", items: ["Flutter", "Dart", "Provider", "Riverpod", "BLoC/Cubit", "go_router", "Firebase", "Fastlane"] },
+    { group: "Backend", items: ["NestJS", "REST APIs", "BullMQ", "Redis Pub/Sub"] },
+    { group: "Data", items: ["PostgreSQL", "Redis", "SQLite (Drift)"] },
+    { group: "Languages", items: ["Dart", "TypeScript", "JavaScript", "SQL", "C++"] },
+    { group: "Delivery & quality", items: ["Testing", "Accessibility", "CircleCI", "Git"] },
+    { group: "AI-assisted development", items: ["Claude Code", "Claude"] },
+    { group: "Concepts", items: ["Offline-first", "Finite state machines", "Real-time systems", "Async job processing", "Idempotency"] },
+  ],
+  credit: "I designed this portfolio and built it with Claude Code, which wrote most of the code from my prompts and reviews.",
+};
+
+const SAMPLE_ACTIVITY = { commits: 23, latestRepo: "toy-city-portfolio", sample: true };
+
+const DISTRICTS = [
+  { key: "about", label: "About", color: "#ff6a3d" },
+  { key: "projects", label: "Projects", color: "#4f7fe8" },
+  { key: "experience", label: "Experience", color: "#2fa37f" },
+  { key: "education", label: "Education", color: "#9567de" },
+  { key: "learn", label: "Learning center", color: "#0f6bd0" },
+  { key: "skills", label: "Skills", color: "#e09a2c" },
+  { key: "contact", label: "Contact", color: "#e2504a" },
+];
+
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+};
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const districtOf = (key) => ({ project: "projects", building: "projects", job: "experience" }[key.split(":")[0]] || key.split(":")[0]);
+
+const App = {
+  city: null,
+  current: null,
+  activity: null,
+  pendingKey: null,
+  isDark() {
+    const t = document.documentElement.dataset.theme;
+    return t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  },
+  // How GitHub activity shows up in the city.
+  shape(a) {
+    const c = a.commits ?? 12; // unknown count: draw a modestly busy site
+    return {
+      floors: Math.max(1, Math.min(7, 1 + Math.floor(c / 5))),
+      cranes: Math.max(1, Math.min(3, Math.ceil(c / 10))),
+      lit: 0.3 + (Math.min(c, 60) / 60) * 0.6,
+    };
+  },
+};
+
+async function loadActivity(user) {
+  if (!user) return SAMPLE_ACTIVITY;
+  try {
+    const res = await fetch(`https://api.github.com/users/${encodeURIComponent(user)}/events/public?per_page=100`);
+    if (!res.ok) throw new Error(String(res.status));
+    const since = Date.now() - 30 * 864e5;
+    let commits = 0, latestRepo = null;
+    for (const e of await res.json()) {
+      if (e.type !== "PushEvent" || new Date(e.created_at) < since) continue;
+      commits += e.payload?.size ?? e.payload?.commits?.length ?? 1;
+      latestRepo ??= e.repo?.name?.split("/")[1] ?? null;
+    }
+    return { commits, latestRepo, sample: false };
+  } catch {
+    // Blocked or offline (an artifact cannot reach api.github.com): no numbers rather than made-up ones.
+    return { commits: null, latestRepo: null, sample: false, unavailable: true };
+  }
+}
+
+/* ---------- templates ---------- */
+const linkBtns = (links = []) => links
+  .map((l) => `<a class="btn" href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join("");
+const articleRows = () => CONTENT.articles.map((a) => `<a class="row" href="${esc(a.url)}" target="_blank" rel="noopener"><span class="art-ico" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M5 2.5h7l3 3v12H5z"/><path d="M8 9h5M8 12h5M8 15h3"/></svg></span><span><b>${esc(a.title)}</b><small>GeekyAnts blog · ${esc(a.date)}${a.with ? ` · with ${esc(a.with)}` : ""}</small><small>${esc(a.summary)}</small></span><span class="chev" aria-hidden="true">↗</span></a>`).join("");
+const tags = (items) => `<div class="tags">${items.map((s) => `<span>${esc(s)}</span>`).join("")}</div>`;
+const ticks = (items) => `<ul class="ticks">${items.map((s) => `<li>${esc(s)}</li>`).join("")}</ul>`;
+
+function device(p, sm = false) {
+  const inner = p.video
+    ? `<video src="${esc(p.video)}" autoplay muted loop playsinline></video>`
+    : `<div class="fake" aria-hidden="true"><i class="fk-bar"></i><i class="fk-hero"></i><i class="fk-row"></i><i class="fk-row s"></i><i class="fk-card"></i><i class="fk-card"></i><i class="fk-row"></i><i class="fk-card"></i><i class="fk-card"></i></div>`;
+  return `<div class="device${sm ? " sm" : ""}" style="--c1:${esc(p.screen[0])};--c2:${esc(p.screen[1])}"><div class="screen">${inner}</div></div>`;
+}
+
+const copyLine = (email) => `<p class="copyline"><code>${esc(email)}</code><button class="btn" type="button" data-copy="${esc(email)}">Copy email</button></p>`;
+
+const currentRole = (j) => j.roles[j.roles.length - 1];
+const floorWord = (r) => r.track === "senior" ? `senior tier, floor ${r.level}` : r.track === "engineer" ? `floor ${r.level}` : r.track === "trainee" ? "lobby" : "first office";
+const communityHtml = () => (CONTENT.community || []).length ? `<h3>Community</h3><ul class="ticks">${CONTENT.community.map((c) => `<li>${esc(c.role)}, ${esc(c.org)} <span style="color:var(--muted)">· ${esc(c.period)}</span></li>`).join("")}</ul>` : "";
+function renderPanel(key) {
+  const C = CONTENT, a = App.activity || { commits: null };
+  const [kind, idx] = key.split(":");
+  switch (kind) {
+    case "about": return `
+      <p class="eyebrow">Town square</p>
+      <h2>Hi, I'm ${esc(C.name)}</h2>
+      <p class="lede">${esc(C.role)}</p>
+      <p>${esc(C.summary)}</p>
+      <p>Each building in this city stands for something I shipped, studied, or use every day. Tap around.</p>
+      <dl class="facts">${C.facts.map((f) => `<div><dt>${esc(f.label)}</dt><dd>${esc(f.value)}</dd></div>`).join("")}</dl>
+      <div class="actions"><button class="btn primary" type="button" data-go="projects">See my projects</button><button class="btn" type="button" data-mode="resume">Recruiter mode</button></div>
+      <p class="credit">${esc(C.credit)}</p>`;
+    case "projects": return `
+      <p class="eyebrow">Downtown</p>
+      <h2>Projects</h2>
+      <p>Each tower is an app I built. Tap one to see it running.</p>
+      <div class="rows">
+        ${C.projects.map((p, n) => `<button class="row" type="button" data-go="project:${n}">${device(p, true)}<span><b>${esc(p.name)}</b><small>${esc(p.tagline)}</small></span><span class="chev" aria-hidden="true">›</span></button>`).join("")}
+        <button class="row" type="button" data-go="building"><span class="crane-ico" aria-hidden="true"></span><span><b>Currently building</b><small>${a.commits ? `${a.commits} public commits in the last 30 days` : "A construction site wired to GitHub"}</small></span><span class="chev" aria-hidden="true">›</span></button>
+      </div>`;
+    case "project": {
+      const p = C.projects[+idx];
+      if (!p) return "";
+      return `
+      <button class="back" type="button" data-go="projects">‹ All projects</button>
+      <div class="proj-head">${device(p)}<div><p class="eyebrow">${esc(p.year)} · ${esc(p.role)}</p><h2>${esc(p.name)}</h2><p class="lede">${esc(p.tagline)}</p>${p.sample ? `<span class="badge">Sample content</span>` : ""}</div></div>
+      <p>${esc(p.description)}</p>
+      ${p.caseStudy ? `<a class="btn primary case-btn" href="${esc(p.caseStudy)}">${esc(p.caseStudyLabel || "Open the case study")}</a>` : ""}
+      ${ticks(p.highlights)}
+      ${tags(p.stack)}
+      ${p.links.length ? `<div class="actions">${linkBtns(p.links)}</div>` : `<p class="note">Client work, so the code is private. The case study runs the app's own layout and relationship engines, ported line for line from its Dart and TypeScript.</p>`}`;
+    }
+    case "learn": {
+      const L = C.learn, B = L.backend;
+      return `
+      <p class="eyebrow">Campus library</p>
+      <h2>Learning center</h2>
+      <p class="lede">What I learn, written up so the next person gets there faster.</p>
+      <h3>Articles</h3>
+      <div class="rows">${articleRows()}</div>
+      <h3>${esc(L.title)}</h3>
+      <p>${esc(L.summary)}</p>
+      <dl class="facts"><div><dt>Modules</dt><dd>${L.count}</dd></div><div><dt>Price</dt><dd>Free</dd></div></dl>
+      ${tags(L.modules)}
+      <div class="actions"><a class="btn primary" href="${esc(L.url)}" target="_blank" rel="noopener">Open the guide</a></div>
+      <h3>${esc(B.title)}</h3>
+      <p>${esc(B.summary)}</p>
+      ${B.live ? `<div class="actions"><a class="btn" href="${esc(B.url)}" target="_blank" rel="noopener">Read the backend notes</a></div>` : `<p class="note">Coming to the guide soon.</p>`}`;
+    }
+    case "building": {
+      const s = App.shape(a);
+      return `
+      <button class="back" type="button" data-go="projects">‹ All projects</button>
+      <p class="eyebrow">Construction site</p>
+      <h2>Currently building</h2>
+      <p>This lot follows my GitHub activity. Commits add floors to the tower, and a busy month brings more cranes. The lit windows across the city follow the same count.</p>
+      ${a.commits != null ? `<dl class="facts">${a.commits ? `<div><dt>Public commits, 30 days</dt><dd>${a.commits}</dd></div>` : ""}<div><dt>Floors</dt><dd>${s.floors}</dd></div><div><dt>Cranes</dt><dd>${s.cranes}</dd></div></dl>` : ""}
+      ${a.latestRepo ? `<p>Latest push: <code>${esc(a.latestRepo)}</code></p>` : ""}
+      ${a.sample ? `<p class="note">These are sample numbers. Put your username in <code>github</code> and host the page on your own domain to make them live.</p>` : ""}
+      ${a.unavailable ? `<p class="note">Live numbers load when this page runs on my own domain.</p>` : ""}
+      ${!a.commits ? `<p class="note">Most of my day-to-day work lives in private client repositories, so public GitHub shows only part of it.</p>` : ""}`;
+    }
+    case "experience": return `
+      <p class="eyebrow">Office park</p>
+      <h2>Experience</h2>
+      <p>Each company is a tower that grows with my career: a lobby for the trainee months, one floor per engineer level, and above a balcony a new tier for the senior track.</p>
+      <ol class="timeline">${C.experience.map((j, n) => `<li><button class="row" type="button" data-go="job:${n}"><span class="crane-ico" style="background:${esc(j.color)}" aria-hidden="true"></span><span><b>${esc(currentRole(j).title)}</b><small>${esc(j.company)} · ${esc(j.period)}</small></span><span class="chev" aria-hidden="true">›</span></button></li>`).join("")}</ol>
+      ${communityHtml()}`;
+    case "job": {
+      const j = C.experience[+idx];
+      if (!j) return "";
+      return `
+      <button class="back" type="button" data-go="experience">‹ All experience</button>
+      <p class="eyebrow">${esc(j.period)} · ${esc(j.place || "")}</p>
+      <h2>${esc(j.company)}</h2>
+      <p class="lede">${esc(currentRole(j).title)}</p>
+      <ol class="career">${[...j.roles].reverse().map((r) => `<li><b>${esc(r.title)}</b><small>${esc(r.period)} · ${esc(floorWord(r))}</small>${r.points?.length ? ticks(r.points) : ""}</li>`).join("")}</ol>
+      ${j.stack ? tags(j.stack) : ""}`;
+    }
+    case "education": return `
+      <p class="eyebrow">Campus</p>
+      <h2>Education</h2>
+      ${C.education.map((e) => `<div class="edu"><b>${esc(e.degree)}</b><span>${esc(e.school)} · ${esc(e.period)}</span>${e.note ? `<p>${esc(e.note)}</p>` : ""}</div>`).join("")}`;
+    case "skills": return `
+      <p class="eyebrow">Factory</p>
+      <h2>Skills</h2>
+      <p>What the factory runs on day to day.</p>
+      ${C.skills.map((g) => `<h3>${esc(g.group)}</h3>${tags(g.items)}`).join("")}`;
+    case "contact": return `
+      <p class="eyebrow">Harbour post office</p>
+      <h2>Say hello</h2>
+      <p>${esc(C.contactNote)}</p>
+      ${copyLine(C.links.email)}
+      <div class="actions">
+        ${C.links.github ? `<a class="btn" href="${esc(C.links.github)}" target="_blank" rel="noopener">GitHub</a>` : ""}
+        ${C.links.linkedin ? `<a class="btn" href="${esc(C.links.linkedin)}" target="_blank" rel="noopener">LinkedIn</a>` : ""}
+        ${C.links.resumePdf ? `<a class="btn" href="${esc(C.links.resumePdf)}" target="_blank" rel="noopener">Resume PDF</a>` : ""}
+      </div>`;
+  }
+  return "";
+}
+
+function renderResume() {
+  const C = CONTENT, a = App.activity || { commits: null };
+  $("#resume").innerHTML = `
+  <div class="r-wrap">
+    <header class="r-head">
+      <div>
+        <p class="eyebrow">Portfolio</p>
+        <h1>${esc(C.name)}</h1>
+        <p class="lede">${esc(C.role)}</p>
+        <p class="r-sum">${esc(C.summary)}</p>
+        <p class="r-facts"><span>${esc(C.place)}</span><span>${esc(C.yearsLine)}</span><a href="mailto:${esc(C.links.email)}">${esc(C.links.email)}</a><a href="${esc(C.links.linkedin)}" target="_blank" rel="noopener">LinkedIn</a><a href="${esc(C.links.github)}" target="_blank" rel="noopener">GitHub</a></p>
+        ${a.commits ? `<p class="r-live"><span class="dot${a.sample ? " sample" : ""}"></span>${a.commits} public commits in the last 30 days${a.sample ? " (sample)" : ""}</p>` : ""}
+      </div>
+      <div class="r-actions"><button class="btn primary" type="button" data-mode="city">Explore the city</button><button class="btn" type="button" data-copy="${esc(C.links.email)}">Copy email</button></div>
+    </header>
+    <section>
+      <h2>Experience</h2>
+      ${C.experience.flatMap((j) => [...j.roles].reverse().map((r) => `<article class="r-item"><div class="r-when">${esc(r.period)}</div><div><h3>${esc(r.title)}</h3><p class="r-meta">${esc(j.company)}</p>${r.points?.length ? ticks(r.points) : ""}</div></article>`)).join("")}
+      ${(C.community || []).map((c) => `<article class="r-item"><div class="r-when">${esc(c.period)}</div><div><h3>${esc(c.role)}</h3><p class="r-meta">${esc(c.org)} · community</p></div></article>`).join("")}
+    </section>
+    <section>
+      <h2>Projects</h2>
+      ${C.projects.map((p) => `<article class="r-proj">${device(p)}<div><h3>${esc(p.name)}</h3><p class="r-meta">${esc(p.year)} · ${esc(p.role)}</p><p>${esc(p.description)}</p>${p.highlights?.length ? ticks(p.highlights.slice(0, 3)) : ""}${tags(p.stack)}${p.links.length || p.caseStudy ? `<div class="actions">${p.caseStudy ? `<a class="btn primary" href="${esc(p.caseStudy)}">Interactive case study</a>` : ""}${linkBtns(p.links)}</div>` : ""}</div></article>`).join("")}
+    </section>
+    <section>
+      <h2>Learning center</h2>
+      <h3>Articles</h3>
+      ${C.articles.map((a) => `<article class="r-item"><div class="r-when">${esc(a.date)}</div><div><h3><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.title)}</a></h3><p class="r-meta">GeekyAnts blog${a.with ? ` · with ${esc(a.with)}` : ""}</p><p>${esc(a.summary)}</p></div></article>`).join("")}
+      <h3>${esc(C.learn.title)}</h3>
+      <p class="r-sum">${esc(C.learn.summary)} ${C.learn.count} modules, free.</p>
+      <p><a class="btn" href="${esc(C.learn.url)}" target="_blank" rel="noopener">Open the ${esc(C.learn.title)}</a></p>
+      ${C.learn.backend?.live ? `<h3>${esc(C.learn.backend.title)}</h3><p class="r-sum">${esc(C.learn.backend.summary)}</p><p><a class="btn" href="${esc(C.learn.backend.url)}" target="_blank" rel="noopener">Read the backend notes</a></p>` : ""}
+    </section>
+    <section>
+      <h2>Education</h2>
+      ${C.education.map((e) => `<article class="r-item"><div class="r-when">${esc(e.period)}</div><div><h3>${esc(e.degree)}</h3><p class="r-meta">${esc(e.school)}</p>${e.note ? `<p>${esc(e.note)}</p>` : ""}</div></article>`).join("")}
+    </section>
+    <section>
+      <h2>Skills</h2>
+      <div class="r-skills">${C.skills.map((g) => `<div><h3 class="group">${esc(g.group)}</h3>${tags(g.items)}</div>`).join("")}</div>
+    </section>
+    <section>
+      <h2>Contact</h2>
+      <p>${esc(C.contactNote)}</p>
+      ${copyLine(C.links.email)}
+    </section>
+    <footer class="r-foot">${esc(C.credit)}</footer>
+  </div>`;
+}
+
+function renderActivity() {
+  const a = App.activity, el = $("#activity");
+  if (!a) { el.hidden = true; return; }
+  el.innerHTML = `<span class="dot${a.sample ? " sample" : ""}"></span><span><b>${a.commits}</b> commits · 30d${a.sample ? " · sample" : ""}</span>`;
+  el.hidden = !a.commits;
+}
+
+/* ---------- UI state ---------- */
+const panel = $("#panel"), panelBody = $("#panel-body");
+
+function setHash(h) {
+  try { history.replaceState(null, "", h ? "#" + h : location.pathname + location.search); } catch {}
+}
+
+function markActive(district) {
+  for (const c of document.querySelectorAll(".chip")) c.setAttribute("aria-current", String(c.dataset.go === district));
+}
+
+App.select = function select(key) {
+  const html = renderPanel(key);
+  if (!html) return;
+  App.current = key;
+  panelBody.innerHTML = html;
+  panelBody.scrollTop = 0;
+  panel.classList.add("open");
+  panel.inert = false;
+  panel.setAttribute("aria-hidden", "false");
+  document.body.classList.add("panel-open");
+  markActive(districtOf(key));
+  App.city?.focus(key);
+  setHash(key.replace(":", "-"));
+  dismissHint();
+};
+
+App.close = function close() {
+  if (!App.current) return;
+  App.current = null;
+  panel.classList.remove("open");
+  panel.inert = true;
+  panel.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("panel-open");
+  markActive(null);
+  App.city?.overview();
+  setHash("");
+};
+
+function setMode(mode) {
+  const resume = mode === "resume";
+  document.body.classList.toggle("mode-resume", resume);
+  $("#resume").hidden = !resume;
+  App.city?.pause(resume);
+  store.set("toycity.mode", mode);
+  if (resume) {
+    window.scrollTo(0, 0);
+    setHash("recruiter");
+  } else {
+    App.city?.resize();
+    setHash(App.current ? App.current.replace(":", "-") : "");
+  }
+}
+
+const ICONS = {
+  moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>`,
+  sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>`,
+};
+function updateThemeBtn() {
+  const dark = App.isDark(), b = $("#theme-btn");
+  b.innerHTML = dark ? ICONS.sun : ICONS.moon;
+  b.setAttribute("aria-label", dark ? "Switch to day" : "Switch to night");
+}
+function toggleTheme() {
+  const t = App.isDark() ? "light" : "dark";
+  document.documentElement.dataset.theme = t;
+  store.set("toycity.theme", t);
+}
+function onThemeChange() { updateThemeBtn(); App.city?.setTheme(); }
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", onThemeChange);
+new MutationObserver(onThemeChange).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+let toastTimer;
+function toast(msg) {
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
+}
+function copy(text, btn) {
+  const fallback = () => {
+    const code = btn.closest(".copyline")?.querySelector("code");
+    if (code) getSelection().selectAllChildren(code);
+    toast(code ? "Address selected. Copy it from there." : text);
+  };
+  try {
+    navigator.clipboard.writeText(text).then(() => toast("Email copied"), fallback);
+  } catch { fallback(); }
+}
+
+let hintTimer;
+function showHint() {
+  const h = $("#hint");
+  h.textContent = matchMedia("(pointer: coarse)").matches
+    ? "Drag to move · pinch to zoom · tap a building"
+    : "Drag to move · scroll to zoom · click a building";
+  h.classList.remove("gone");
+  hintTimer = setTimeout(dismissHint, 6500);
+}
+function dismissHint() { clearTimeout(hintTimer); $("#hint").classList.add("gone"); }
+App.dismissHint = dismissHint;
+App.hint = (text, ms = 6500) => {
+  clearTimeout(hintTimer);
+  $("#hint").textContent = text;
+  $("#hint").classList.remove("gone");
+  hintTimer = setTimeout(dismissHint, ms);
+};
+App.toast = toast;
+
+App.cityReady = () => {
+  $("#loader").classList.add("done");
+  if (App.pendingKey) { App.select(App.pendingKey); App.pendingKey = null; }
+  else showHint();
+};
+App.noWebGL = () => {
+  $("#loader").classList.add("failed");
+  setMode("resume");
+};
+
+document.addEventListener("click", (e) => {
+  const m = e.target.closest("[data-map]");
+  if (m) {
+    const k = m.dataset.map;
+    if (k === "home") { if (App.current) App.close(); App.city?.resetView(); }
+    else App.city?.zoomBy(k === "in" ? 1.25 : 1 / 1.25);
+    return;
+  }
+  if (e.target.closest("[data-walk]")) { App.city?.toggleWalk(); return; }
+  const t = e.target.closest("[data-go],[data-mode],[data-copy],[data-close],[data-theme-toggle]");
+  if (!t) return;
+  if (t.dataset.go) App.select(t.dataset.go);
+  else if (t.dataset.mode) setMode(t.dataset.mode);
+  else if (t.dataset.copy) copy(t.dataset.copy, t);
+  else if (t.hasAttribute("data-close")) App.close();
+  else if (t.hasAttribute("data-theme-toggle")) toggleTheme();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  if (App.current) App.close();
+  else App.city?.exitWalk();
+});
+
+/* ---------- boot ---------- */
+$("#brand-name").textContent = CONTENT.name;
+$("#brand-role").textContent = CONTENT.role;
+$("#chips").innerHTML = DISTRICTS.map((d) => `<button class="chip" type="button" data-go="${d.key}" style="--dot:${d.color}" aria-current="false">${d.label}</button>`).join("");
+updateThemeBtn();
+renderResume();
+renderActivity();
+
+const startHash = location.hash.slice(1);
+if (startHash === "recruiter" || (!startHash && store.get("toycity.mode") === "resume")) setMode("resume");
+else if (startHash) App.pendingKey = startHash.replace("-", ":");
+
+loadActivity(CONTENT.github).then((a) => {
+  App.activity = a;
+  renderResume();
+  renderActivity();
+  App.city?.setActivity(a);
+  if (App.current) panelBody.innerHTML = renderPanel(App.current);
+});
+
+// If the 3D bundle never arrives (offline CDN, old browser), offer the resume instead of a stuck loader.
+setTimeout(() => { if (!App.city) $("#loader").classList.add("failed"); }, 15000);
+</script>
+
+<script type="module">
+import * as THREE from "three";
+import { MapControls } from "three/addons/controls/MapControls.js";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { HorizontalTiltShiftShader } from "three/addons/shaders/HorizontalTiltShiftShader.js";
+import { VerticalTiltShiftShader } from "three/addons/shaders/VerticalTiltShiftShader.js";
+
+const host = document.getElementById("scene");
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+} catch (err) {
+  App.noWebGL();
+  throw err;
+}
+
+const coarse = matchMedia("(pointer: coarse)").matches;
+const narrow = () => host.clientWidth < 720;
+const UP = new THREE.Vector3(0, 1, 0);
+const ease = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
+const lerp = THREE.MathUtils.lerp;
+
+renderer.setPixelRatio(Math.min(devicePixelRatio, coarse ? 1.75 : 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+host.appendChild(renderer.domElement);
+
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.domElement.className = "labels";
+host.appendChild(labelRenderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 400);
+const HOME = new THREE.Vector3(28, 26, 28);
+camera.position.copy(HOME);
+
+const controls = new MapControls(camera, renderer.domElement);
+controls.target.set(-1.5, 0, -1.5);
+camera.position.add(controls.target);
+Object.assign(controls, { enableDamping: true, dampingFactor: 0.08, minZoom: 0.6, maxZoom: 3.4, minPolarAngle: 0.72, maxPolarAngle: 1.08 });
+controls.update();
+
+// Tilt-shift: blur the top and bottom of the frame so the city reads as a miniature.
+const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { samples: 4, type: THREE.HalfFloatType }));
+const renderPass = new RenderPass(scene, camera);
+composer.addPass(renderPass);
+const hBlur = new ShaderPass(HorizontalTiltShiftShader);
+const vBlur = new ShaderPass(VerticalTiltShiftShader);
+hBlur.uniforms.r.value = vBlur.uniforms.r.value = 0.5;
+composer.addPass(hBlur);
+composer.addPass(vBlur);
+composer.addPass(new OutputPass());
+
+/* ---------- lights & theme ---------- */
+const hemi = new THREE.HemisphereLight("#ffffff", "#888888", 1);
+const sun = new THREE.DirectionalLight("#ffffff", 2);
+sun.position.set(14, 24, 8);
+sun.castShadow = true;
+sun.shadow.mapSize.setScalar(coarse ? 1024 : 2048);
+Object.assign(sun.shadow.camera, { left: -22, right: 22, top: 22, bottom: -22, near: 1, far: 70 });
+sun.shadow.camera.updateProjectionMatrix();
+sun.shadow.bias = -0.0004;
+sun.shadow.normalBias = 0.03;
+scene.add(hemi, sun, sun.target);
+
+const THEMES = {
+  day: { sky: "#cfe7f4", water: "#79c4e2", hemiSky: "#eaf6ff", hemiGround: "#c7b28e", hemi: 1.25, sun: "#fff1dc", sunI: 2.5, cloud: "#ffffff", lit: "#eaf6ff", unlit: "#a6c6db", lamp: "#d7dce3", smoke: "#f4f4f4", beam: false },
+  night: { sky: "#0d1830", water: "#173252", hemiSky: "#4d6cab", hemiGround: "#1b1f2e", hemi: 0.5, sun: "#a9bfff", sunI: 0.8, cloud: "#56637f", lit: "#ffd57e", unlit: "#1d293f", lamp: "#ffd57e", smoke: "#8d97ab", beam: true },
+};
+let THEME = THEMES.day;
+
+/* ---------- helpers ---------- */
+const mats = new Map();
+function M(color, flat = false) {
+  const k = color + flat;
+  if (!mats.has(k)) mats.set(k, new THREE.MeshStandardMaterial({ color, roughness: 0.85, flatShading: flat }));
+  return mats.get(k);
+}
+function add(parent, geo, mat, x = 0, y = 0, z = 0, shadow = true) {
+  const m = new THREE.Mesh(geo, typeof mat === "string" ? M(mat) : mat);
+  m.position.set(x, y, z);
+  m.castShadow = shadow;
+  m.receiveShadow = true;
+  parent.add(m);
+  return m;
+}
+const rb = (w, h, d, r = 0.1) => new RoundedBoxGeometry(w, h, d, 2, Math.min(r, w / 2, h / 2, d / 2) * 0.999);
+function prism(w, h, d, peak = 0.5) {
+  const s = new THREE.Shape();
+  s.moveTo(-w / 2, 0); s.lineTo(w / 2, 0); s.lineTo(-w / 2 + w * peak, h); s.closePath();
+  const g = new THREE.ExtrudeGeometry(s, { depth: d, bevelEnabled: false });
+  g.translate(0, 0, -d / 2);
+  return g;
+}
+let seed = 11;
+const rand = () => {
+  seed = (seed + 0x6d2b79f5) | 0;
+  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+};
+
+// Windows: collected per building, then drawn as one InstancedMesh so they can be relit cheaply.
+const winGeo = new THREE.BoxGeometry(0.34, 0.44, 0.04);
+const winMat = new THREE.MeshBasicMaterial({ color: "#ffffff" });
+const windowSets = [];
+let litFraction = 0.45;
+function addWindows(g, x, y0, z, w, h, d, { colW = 0.7, rowH = 0.8 } = {}) {
+  const list = (g.userData.win ||= []);
+  const rows = Math.max(0, Math.floor((h - 0.9) / rowH) + 1);
+  for (const [nx, nz, fw] of [[0, 1, w], [0, -1, w], [1, 0, d], [-1, 0, d]]) {
+    const cols = Math.max(1, Math.floor((fw - 0.3) / colW));
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const u = (c - (cols - 1) / 2) * colW;
+        list.push({
+          x: x + (nx ? nx * (w / 2 + 0.015) : u),
+          y: y0 + 0.55 + r * rowH,
+          z: z + (nz ? nz * (d / 2 + 0.015) : u),
+          ry: nx ? Math.PI / 2 : 0,
+        });
+      }
+    }
+  }
+}
+function finalizeWindows(g) {
+  const list = g.userData.win;
+  if (!list?.length) return;
+  const im = new THREE.InstancedMesh(winGeo, winMat, list.length);
+  const o = new THREE.Object3D();
+  list.forEach((w, i) => {
+    o.position.set(w.x, w.y, w.z);
+    o.rotation.set(0, w.ry, 0);
+    o.updateMatrix();
+    im.setMatrixAt(i, o.matrix);
+  });
+  im.userData.ranks = list.map(() => Math.random());
+  g.add(im);
+  windowSets.push(im);
+  delete g.userData.win;
+}
+function paintWindows() {
+  const lit = new THREE.Color(THEME.lit), un = new THREE.Color(THEME.unlit);
+  for (const im of windowSets) {
+    im.userData.ranks.forEach((r, i) => im.setColorAt(i, r < litFraction ? lit : un));
+    im.instanceColor.needsUpdate = true;
+  }
+}
+
+/* ---------- picking, labels, targets ---------- */
+const pickRoots = [], liftables = [], targets = new Map(), labels = [];
+const districtInfo = Object.fromEntries(DISTRICTS.map((d) => [d.key, d]));
+
+function label(parent, text, key, y, sm = false) {
+  const wrap = document.createElement("div");
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "label" + (sm ? " sm" : "");
+  b.textContent = text;
+  if (!sm) b.style.setProperty("--dot", districtInfo[key]?.color);
+  b.addEventListener("click", (e) => { e.stopPropagation(); App.select(key); });
+  wrap.appendChild(b);
+  const o = new CSS2DObject(wrap);
+  o.position.set(0, y, 0);
+  parent.add(o);
+  labels.push({ o, b, key, sm, on: false });
+  return o;
+}
+function district(key, x, z, plotColor, labelY, zoom = 1.85) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  g.userData.key = key;
+  world.add(g);
+  pickRoots.push(g);
+  if (plotColor) add(g, rb(10.4, 0.1, 10.4, 0.2), plotColor, 0, 0.03, 0, false);
+  targets.set(key, { obj: g, zoom });
+  label(g, districtInfo[key].label, key, labelY);
+  return g;
+}
+function item(parent, key, x, z, zoom = 2.1) {
+  const g = new THREE.Group();
+  g.position.set(x, 0.08, z);
+  g.userData.key = key;
+  g.userData.baseY = 0.08;
+  parent.add(g);
+  liftables.push(g);
+  targets.set(key, { obj: g, zoom });
+  return g;
+}
+
+// Footprints that trees must avoid (world coords).
+const blocked = [];
+const block = (x, z, w, d, pad = 0.35) => blocked.push([x - w / 2 - pad, z - d / 2 - pad, x + w / 2 + pad, z + d / 2 + pad]);
+
+/* ---------- island ---------- */
+const world = new THREE.Group();
+scene.add(world);
+const waterMat = new THREE.MeshStandardMaterial({ color: "#79c4e2", roughness: 0.35 });
+const water = add(world, new THREE.PlaneGeometry(400, 400), waterMat, 0, -0.7, 0, false);
+water.rotation.x = -Math.PI / 2;
+add(world, rb(27.4, 1, 27.4, 0.5), "#e8d3a6", 0, -0.75, 0);
+add(world, rb(26, 0.6, 26, 0.3), "#9fcf7c", 0, -0.3, 0);
+
+const roadMat = M("#5a616c");
+const dashGeo = new THREE.BoxGeometry(0.55, 0.02, 0.08);
+const ARM = [0, Math.PI / 2, Math.PI, Math.PI * 1.5];
+const dirOf = (a) => new THREE.Vector3(Math.cos(a), 0, Math.sin(a));
+const sideOf = (a) => new THREE.Vector3(-Math.sin(a), 0, Math.cos(a));
+for (const a of ARM) {
+  const len = 13 - 2.6, mid = 2.6 + len / 2;
+  const road = add(world, new THREE.BoxGeometry(len, 0.05, 2), roadMat, Math.cos(a) * mid, 0.025, Math.sin(a) * mid, false);
+  road.rotation.y = -a;
+  for (let r = 3.6; r < 12.6; r += 1.1) {
+    const d = add(world, dashGeo, "#f3f0e6", Math.cos(a) * r, 0.055, Math.sin(a) * r, false);
+    d.rotation.y = -a;
+  }
+}
+const ring = add(world, new THREE.RingGeometry(1.75, 2.95, 48), roadMat, 0, 0.03, 0, false);
+ring.rotation.x = -Math.PI / 2;
+
+const lampMat = new THREE.MeshBasicMaterial({ color: "#d7dce3" });
+const poleGeo = new THREE.CylinderGeometry(0.04, 0.05, 1.1, 6), lampGeo = new THREE.SphereGeometry(0.11, 10, 8);
+const poles = [];
+for (const a of ARM) for (const r of [5, 9.6]) for (const s of [1, -1]) {
+  const p = dirOf(a).multiplyScalar(r).addScaledVector(sideOf(a), s * 1.3);
+  poles.push([p.x, p.z]);
+  add(world, poleGeo, "#8d96a3", p.x, 0.6, p.z);
+  add(world, lampGeo, lampMat, p.x, 1.18, p.z, false);
+}
+
+/* ---------- About: town square ---------- */
+const about = district("about", 0, 0, null, 2.7, 2.6);
+add(about, new THREE.CylinderGeometry(1.75, 1.8, 0.16, 40), "#8fc56d", 0, 0.08, 0);
+add(about, new THREE.CylinderGeometry(1.0, 1.1, 0.3, 28), "#d9d3c4", 0, 0.3, 0);
+add(about, new THREE.CylinderGeometry(0.9, 0.9, 0.06, 28), "#8fd6f2", 0, 0.44, 0, false);
+add(about, new THREE.CylinderGeometry(0.12, 0.16, 0.7, 12), "#d9d3c4", 0, 0.7, 0);
+add(about, new THREE.CylinderGeometry(0.45, 0.16, 0.16, 20), "#d9d3c4", 0, 1.08, 0);
+const jet = add(about, new THREE.SphereGeometry(0.16, 12, 10), new THREE.MeshStandardMaterial({ color: "#c4ecff", transparent: true, opacity: 0.85 }), 0, 1.25, 0, false);
+// You: a little figure waving by the fountain.
+const me = new THREE.Group();
+me.position.set(1.3, 0.16, 0.75);
+me.rotation.y = Math.PI / 4;
+about.add(me);
+add(me, new THREE.CapsuleGeometry(0.17, 0.28, 4, 10), "#ff6a3d", 0, 0.32, 0);
+add(me, new THREE.SphereGeometry(0.16, 16, 12), "#f0c6a0", 0, 0.72, 0);
+add(me, new THREE.SphereGeometry(0.168, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2.1), "#2b2320", 0, 0.74, -0.01);
+const arm = new THREE.Group();
+arm.position.set(0.17, 0.48, 0);
+me.add(arm);
+const armGeo = new THREE.BoxGeometry(0.07, 0.3, 0.07);
+armGeo.translate(0, -0.15, 0);
+add(arm, armGeo, "#ff6a3d");
+
+/* ---------- Projects: downtown ---------- */
+const P = district("projects", -7.4, -7.4, "#d2dbe6", 8.6);
+const towerSlots = [[-2.5, -2.5, 6.4], [2.5, -2.6, 4.8], [-2.6, 2.5, 3.9]];
+CONTENT.projects.slice(0, 3).forEach((p, n) => {
+  const [x, z, h] = towerSlots[n];
+  const g = item(P, `project:${n}`, x, z);
+  add(g, rb(3.3, 0.5, 3.3, 0.12), "#ece5d4", 0, 0.25, 0);
+  add(g, rb(2.5, h, 2.5, 0.14), p.color, 0, 0.5 + h / 2, 0);
+  addWindows(g, 0, 0.5, 0, 2.5, h, 2.5);
+  add(g, rb(1.7, 0.55, 1.7, 0.1), p.accent, 0, 0.5 + h + 0.27, 0);
+  add(g, new THREE.CylinderGeometry(0.035, 0.05, 1.1, 6), "#c9ccd1", 0.4, 0.5 + h + 1.1, 0.4);
+  finalizeWindows(g);
+  label(g, p.name, `project:${n}`, 0.5 + h + 1.9, true);
+  block(-7.4 + x, -7.4 + z, 3.3, 3.3);
+});
+
+// Construction lot: floors and cranes follow GitHub activity.
+const lot = item(P, "building", 2.5, 2.5, 2.6);
+add(lot, rb(3.7, 0.08, 3.7, 0.04), "#c9a77a", 0, 0.04, 0, false);
+for (const [cx, cz] of [[-1.7, -1.7], [1.7, -1.7], [-1.7, 1.7], [1.7, 1.7]]) add(lot, new THREE.BoxGeometry(0.12, 0.5, 0.12), "#f2b632", cx, 0.25, cz);
+const lotFrame = new THREE.Group();
+lot.add(lotFrame);
+const lotLabel = label(lot, "Now building", "building", 3, true);
+const cranes = [];
+const slabGeo = new THREE.BoxGeometry(2.0, 0.08, 2.0), colGeo = new THREE.BoxGeometry(0.1, 0.5, 0.1);
+function crane(parent, x, z, H) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  add(g, new THREE.BoxGeometry(0.22, H, 0.22), "#f2b632", 0, H / 2, 0);
+  const top = new THREE.Group();
+  top.position.y = H;
+  g.add(top);
+  add(top, new THREE.BoxGeometry(3.4, 0.18, 0.2), "#f2b632", 1.0, 0, 0);
+  add(top, rb(0.5, 0.35, 0.36, 0.05), "#d8dce2", -0.6, -0.08, 0);
+  add(top, rb(0.32, 0.3, 0.32, 0.05), "#3d4a5c", 0, 0.18, 0);
+  add(top, new THREE.BoxGeometry(0.02, 1.4, 0.02), "#333a44", 2.3, -0.7, 0);
+  add(top, new THREE.BoxGeometry(0.3, 0.16, 0.3), "#d64545", 2.3, -1.45, 0);
+  parent.add(g);
+  return { g, top, speed: 0.25 + rand() * 0.25, phase: rand() * 6 };
+}
+function setActivity(a) {
+  const s = App.shape(a);
+  litFraction = s.lit;
+  paintWindows();
+  lotFrame.clear();
+  for (let f = 0; f < s.floors; f++) {
+    add(lotFrame, slabGeo, "#cfccc4", 0, 0.12 + f * 0.5, 0);
+    for (const [cx, cz] of [[-0.9, -0.9], [0.9, -0.9], [-0.9, 0.9], [0.9, 0.9]]) add(lotFrame, colGeo, "#ff9b3d", cx, 0.37 + f * 0.5, cz);
+  }
+  for (const c of cranes) lot.remove(c.g);
+  cranes.length = 0;
+  const spots = [[-1.45, 1.45], [1.45, -1.45], [-1.45, -1.45]];
+  for (let k = 0; k < s.cranes; k++) cranes.push(crane(lot, spots[k][0], spots[k][1], 2.4 + s.floors * 0.5 + k * 0.45));
+  lotLabel.position.y = 3.4 + s.floors * 0.5;
+}
+block(-4.9, -4.9, 3.7, 3.7);
+
+/* ---------- Experience: office park ---------- */
+const E = district("experience", 7.4, -7.4, "#d5e6cf", 4.6);
+// A company's tower grows with the career there: a glass lobby for trainee or intern months,
+// one floor per engineer level (SE I is floor 1, SE III is floor 3), then a balcony and a
+// set-back senior tier with one floor per senior level.
+const officeSlots = [[-1.9, -1.9], [2.6, -2.3], [-2.3, 2.3]];
+const FLOOR = 0.62;
+function careerTower(g, j) {
+  let y = 0.3;
+  add(g, rb(3.8, 0.3, 3.2, 0.08), "#e9e4d8", 0, 0.15, 0);
+  const has = (t) => j.roles.some((r) => r.track === t);
+  if (has("trainee") || has("intern")) {
+    add(g, rb(3.4, FLOOR - 0.04, 2.8, 0.1), "#dfe9f1", 0, y + FLOOR / 2, 0);
+    addWindows(g, 0, y - 0.24, 0, 3.4, 1.0, 2.8, { colW: 0.45 });
+    y += FLOOR;
+  }
+  const eng = Math.max(0, ...j.roles.filter((r) => r.track === "engineer").map((r) => r.level || 1));
+  for (let k = 0; k < eng; k++) {
+    add(g, rb(3.4, FLOOR - 0.04, 2.8, 0.1), j.color, 0, y + FLOOR / 2, 0);
+    addWindows(g, 0, y - 0.24, 0, 3.4, 1.0, 2.8, { colW: 0.55 });
+    y += FLOOR;
+  }
+  const sen = Math.max(0, ...j.roles.filter((r) => r.track === "senior").map((r) => r.level || 1));
+  if (sen) {
+    add(g, rb(3.9, 0.1, 3.3, 0.04), "#e9e4d8", 0, y + 0.05, 0); // the balcony
+    for (const [w, d, x, z] of [[3.9, 0.04, 0, 1.63], [3.9, 0.04, 0, -1.63], [0.04, 3.3, 1.93, 0], [0.04, 3.3, -1.93, 0]]) add(g, new THREE.BoxGeometry(w, 0.22, d), "#cfd6de", x, y + 0.21, z);
+    y += 0.1;
+    for (let k = 0; k < sen; k++) {
+      add(g, rb(2.7, FLOOR - 0.04, 2.2, 0.1), j.accent || "#2fa37f", 0, y + FLOOR / 2, 0);
+      addWindows(g, 0, y - 0.24, 0, 2.7, 1.0, 2.2, { colW: 0.55 });
+      y += FLOOR;
+    }
+  }
+  if (j.period.includes("now")) { // a flag on the roof of where I work now
+    add(g, new THREE.CylinderGeometry(0.03, 0.03, 0.8, 6), "#8d96a3", 0.6, y + 0.4, 0.4);
+    add(g, new THREE.BoxGeometry(0.4, 0.24, 0.03), j.accent || "#2fa37f", 0.8, y + 0.68, 0.4);
+  } else add(g, rb(1.0, 0.3, 0.8, 0.05), "#a9b3bf", 0.5, y + 0.15, -0.3);
+  add(g, new THREE.BoxGeometry(0.7, 0.5, 0.04), "#3d4a5c", 0, 0.55, 1.42);
+  return y;
+}
+CONTENT.experience.slice(0, 3).forEach((j, n) => {
+  const [x, z] = officeSlots[n];
+  const g = item(E, `job:${n}`, x, z);
+  const top = careerTower(g, j);
+  finalizeWindows(g);
+  label(g, j.company, `job:${n}`, top + 1.1, true);
+  block(7.4 + x, -7.4 + z, 3.9, 3.3);
+});
+const CAR_COLORS = ["#ff6a3d", "#4f7fe8", "#f2c14e", "#2fa37f", "#e2504a", "#f4f1ea", "#9567de"];
+function car(color) {
+  const g = new THREE.Group();
+  add(g, rb(0.5, 0.26, 0.95, 0.08), color, 0, 0.2, 0);
+  add(g, rb(0.44, 0.22, 0.5, 0.07), "#e8f2fa", 0, 0.42, -0.05);
+  return g;
+}
+add(E, rb(3.6, 0.04, 3.2, 0.02), "#7d8591", 2.4, 0.1, 2.4, false);
+for (let k = 0; k < 4; k++) add(E, new THREE.BoxGeometry(0.05, 0.01, 1.1), "#f3f0e6", 1.0 + k * 0.9, 0.125, 2.0, false);
+[[1.45, 0], [3.25, 2]].forEach(([px, ci]) => {
+  const c = car(CAR_COLORS[ci]);
+  c.position.set(px, 0.08, 2.05);
+  E.add(c);
+});
+block(9.8, -5.0, 3.6, 3.2);
+
+/* ---------- Education: campus ---------- */
+const Ed = district("education", -7.4, 7.4, "#cde5bd", 5.8);
+const hall = new THREE.Group();
+hall.position.set(-0.6, 0.08, -1.0);
+Ed.add(hall);
+add(hall, rb(5.4, 0.35, 3.4, 0.06), "#e3dccb", 0, 0.175, 0);
+add(hall, rb(5, 1.9, 2.4, 0.06), "#f4ecdb", 0, 1.3, -0.4);
+addWindows(hall, 0, 0.35, -0.4, 5, 1.9, 2.4, { colW: 0.8 });
+finalizeWindows(hall);
+for (let k = 0; k < 6; k++) add(hall, new THREE.CylinderGeometry(0.13, 0.15, 1.6, 10), "#fbf6ea", -2.1 + k * 0.84, 1.15, 1.25);
+add(hall, new THREE.BoxGeometry(5.2, 0.25, 0.9), "#efe5cf", 0, 2.07, 0.95);
+add(hall, prism(5.5, 0.8, 3.3), "#d9805f", 0, 2.2, -0.1);
+add(Ed, new THREE.BoxGeometry(1.2, 0.02, 3.0), "#efe6d2", -0.6, 0.09, 2.6, false);
+const clockTower = new THREE.Group();
+clockTower.position.set(3.2, 0.08, -1.8);
+Ed.add(clockTower);
+add(clockTower, rb(1.1, 3.6, 1.1, 0.06), "#efe4cf", 0, 1.8, 0);
+add(clockTower, new THREE.ConeGeometry(0.85, 1.1, 4), "#5b7db3", 0, 4.15, 0).rotation.y = Math.PI / 4;
+const clockHands = [];
+for (const face of [{ p: [0, 2.9, 0.56], ry: 0 }, { p: [0.56, 2.9, 0], ry: Math.PI / 2 }]) {
+  const f = new THREE.Group();
+  f.position.set(...face.p);
+  f.rotation.y = face.ry;
+  clockTower.add(f);
+  add(f, new THREE.CircleGeometry(0.33, 24), new THREE.MeshBasicMaterial({ color: "#fbf7ee" }), 0, 0, 0.005, false);
+  for (const [len, speed] of [[0.18, 1 / 12], [0.27, 1]]) {
+    const geo = new THREE.BoxGeometry(0.035, len, 0.02);
+    geo.translate(0, len / 2, 0);
+    const hand = add(f, geo, "#2a3240", 0, 0, 0.02, false);
+    clockHands.push({ hand, speed });
+  }
+}
+block(-8.0, 6.4, 5.6, 3.6);
+block(-4.2, 5.6, 1.2, 1.2);
+block(-8.0, 10.0, 1.4, 3.0, 0.1);
+
+// Library: the Learn Flutter guide. Its roof is a stack of books.
+const library = item(Ed, "learn", 2.7, 2.6, 2.3);
+add(library, rb(2.8, 0.25, 2.4, 0.06), "#e3dccb", 0, 0.125, 0);
+add(library, rb(2.4, 1.3, 2.0, 0.08), "#f1e7d3", 0, 0.9, 0);
+addWindows(library, 0, 0.25, 0, 2.4, 1.3, 2.0, { colW: 0.6 });
+finalizeWindows(library);
+[["#0f6bd0", 2.5, 2.1, 0], ["#54c5f8", 2.2, 1.85, 0.12], ["#e2504a", 1.9, 1.6, -0.08]].forEach(([col, w, d, rot], k) => {
+  add(library, rb(w, 0.24, d, 0.04), col, 0, 1.67 + k * 0.25, 0).rotation.y = rot;
+});
+add(library, new THREE.BoxGeometry(0.6, 0.7, 0.04), "#3d4a5c", 0, 0.6, 1.01);
+label(library, "Learning center", "learn", 3.2);
+block(-4.7, 10.0, 2.8, 2.4);
+
+/* ---------- Skills: factory ---------- */
+const S = district("skills", 7.4, 7.4, "#e6dac6", 5.8);
+const fac = new THREE.Group();
+fac.position.set(-0.6, 0.08, -0.8);
+S.add(fac);
+add(fac, rb(6, 2, 3.6, 0.1), "#d8c9b1", 0, 1, 0);
+addWindows(fac, 0, 0, 0, 6, 2, 3.6, { colW: 0.9 });
+finalizeWindows(fac);
+const glassMat = new THREE.MeshBasicMaterial({ color: "#bfe3f2" });
+for (let k = 0; k < 4; k++) {
+  add(fac, prism(1.5, 0.75, 3.5, 0), "#9fabb9", -2.25 + k * 1.5, 2.0, 0);
+  add(fac, new THREE.BoxGeometry(0.04, 0.66, 3.3), glassMat, -3 + k * 1.5 + 0.03, 2.36, 0, false);
+}
+add(fac, new THREE.BoxGeometry(1.4, 1.2, 0.05), "#7a8696", 1.6, 0.6, 1.82);
+const chimneyTops = [];
+for (const [cx, cz, h] of [[1.7, -1.1, 4.4], [2.6, -1.1, 3.8]]) {
+  add(fac, new THREE.CylinderGeometry(0.26, 0.32, h, 14), "#b8553f", cx, h / 2, cz);
+  add(fac, new THREE.CylinderGeometry(0.29, 0.29, 0.22, 14), "#f2ede4", cx, h - 0.5, cz);
+  const top = new THREE.Object3D();
+  top.position.set(cx, h + 0.15, cz);
+  fac.add(top);
+  chimneyTops.push(top);
+}
+for (const [tx, tz] of [[3.4, 3.0], [1.5, 3.4]]) {
+  add(S, new THREE.CylinderGeometry(0.75, 0.75, 1.5, 18), "#b9c5d1", tx, 0.83, tz);
+  add(S, new THREE.SphereGeometry(0.75, 18, 8, 0, Math.PI * 2, 0, Math.PI / 2), "#b9c5d1", tx, 1.58, tz);
+}
+block(6.8, 6.6, 6, 3.6);
+block(10.8, 10.4, 1.6, 1.6);
+block(8.9, 10.8, 1.6, 1.6);
+
+/* ---------- Contact: harbour pier ---------- */
+const C = district("contact", 0, 15.6, null, 4.8, 2.2);
+add(C, new THREE.BoxGeometry(2.8, 0.2, 5.2), "#b98a5a", 0, -0.05, 0);
+for (const px of [-1.25, 1.25]) for (let pz = -2.4; pz <= 2.41; pz += 1.2) add(C, new THREE.CylinderGeometry(0.09, 0.09, 0.9, 8), "#7d5a3a", px, -0.55, pz);
+const office = new THREE.Group();
+office.position.set(0, 0.05, -1.0);
+C.add(office);
+add(office, rb(2.0, 1.3, 1.6, 0.08), "#f4efe4", 0, 0.65, 0);
+add(office, prism(2.3, 0.7, 1.9), "#d64f45", 0, 1.3, 0);
+add(office, new THREE.BoxGeometry(0.5, 0.75, 0.04), "#4f7fe8", 0, 0.38, 0.81);
+add(C, rb(0.3, 0.55, 0.3, 0.05), "#d64f45", 0.95, 0.33, 0.3);
+const lighthouse = new THREE.Group();
+lighthouse.position.set(0, 0.05, 2.0);
+C.add(lighthouse);
+[["#ffffff", 0.5, 0.45], ["#e2504a", 0.45, 0.4], ["#ffffff", 0.4, 0.36], ["#e2504a", 0.36, 0.32]].forEach(([col, rb0, rt], k) => {
+  add(lighthouse, new THREE.CylinderGeometry(rt, rb0, 0.6, 16), col, 0, 0.3 + k * 0.6, 0);
+});
+add(lighthouse, new THREE.CylinderGeometry(0.45, 0.45, 0.06, 16), "#3d4a5c", 0, 2.43, 0);
+const beaconMat = new THREE.MeshBasicMaterial({ color: "#fff6cc" });
+add(lighthouse, new THREE.CylinderGeometry(0.24, 0.24, 0.42, 12), beaconMat, 0, 2.67, 0, false);
+add(lighthouse, new THREE.ConeGeometry(0.34, 0.4, 16), "#e2504a", 0, 3.08, 0);
+const beamPivot = new THREE.Group();
+beamPivot.position.set(0, 2.67, 0);
+lighthouse.add(beamPivot);
+const beam = new THREE.Mesh(
+  new THREE.ConeGeometry(0.9, 7, 20, 1, true),
+  new THREE.MeshBasicMaterial({ color: "#ffe6a0", transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }),
+);
+beam.rotation.z = Math.PI / 2;
+beam.position.x = 3.5;
+beamPivot.add(beam);
+
+/* ---------- trees, cars, clouds, smoke ---------- */
+const trunkGeo = new THREE.CylinderGeometry(0.07, 0.09, 0.4, 6);
+const roundGeo = new THREE.IcosahedronGeometry(0.42, 0), pointGeo = new THREE.ConeGeometry(0.4, 1, 7);
+function free(x, z) {
+  if (Math.abs(x) < 1.7 || Math.abs(z) < 1.7 || Math.hypot(x, z) < 3.4) return false;
+  return !blocked.some(([a, b, c, d]) => x > a && x < c && z > b && z < d);
+}
+for (let placed = 0, tries = 0; placed < (coarse ? 34 : 48) && tries < 600; tries++) {
+  const x = (rand() * 2 - 1) * 12.3, z = (rand() * 2 - 1) * 12.3;
+  if (!free(x, z)) continue;
+  const t = new THREE.Group();
+  t.position.set(x, 0.08, z);
+  t.scale.setScalar(0.8 + rand() * 0.5);
+  t.rotation.y = rand() * 6;
+  add(t, trunkGeo, "#8a5a3b", 0, 0.2, 0);
+  if (rand() < 0.4) add(t, pointGeo, M("#4f9a52", true), 0, 0.85, 0);
+  else add(t, roundGeo, M(rand() < 0.5 ? "#6bb35a" : "#7cc063", true), 0, 0.65, 0);
+  world.add(t);
+  blocked.push([x - 0.5, z - 0.5, x + 0.5, z + 0.5]);
+  placed++;
+}
+
+function route() {
+  const ai = Math.floor(Math.random() * 4), bi = (ai + 1 + Math.floor(Math.random() * 3)) % 4;
+  const a = ARM[ai], b = ARM[bi], L = 0.45;
+  const pts = [
+    dirOf(a).multiplyScalar(12.6).addScaledVector(sideOf(a), L),
+    dirOf(a).multiplyScalar(3.0).addScaledVector(sideOf(a), L),
+  ];
+  let end = b;
+  while (end <= a) end += Math.PI * 2;
+  for (let s = 0; s <= 12; s++) pts.push(dirOf(a + ((end - a) * s) / 12).multiplyScalar(2.35));
+  pts.push(dirOf(b).multiplyScalar(3.0).addScaledVector(sideOf(b), -L), dirOf(b).multiplyScalar(12.6).addScaledVector(sideOf(b), -L));
+  for (const p of pts) p.y = 0.06;
+  const cum = [0];
+  for (let k = 1; k < pts.length; k++) cum.push(cum[k - 1] + pts[k].distanceTo(pts[k - 1]));
+  return { pts, cum, len: cum[cum.length - 1] };
+}
+function along(r, s, out) {
+  let k = 1;
+  while (k < r.cum.length - 1 && r.cum[k] < s) k++;
+  const f = (s - r.cum[k - 1]) / (r.cum[k] - r.cum[k - 1] || 1);
+  return out.lerpVectors(r.pts[k - 1], r.pts[k], THREE.MathUtils.clamp(f, 0, 1));
+}
+const cars = [];
+for (let k = 0; k < (coarse ? 5 : 8); k++) {
+  const g = car(CAR_COLORS[k % CAR_COLORS.length]);
+  world.add(g);
+  const r = route();
+  cars.push({ g, r, s: Math.random() * r.len, v: 1.4 + Math.random() * 0.8 });
+}
+
+const cloudMat = new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 1, flatShading: true, transparent: true, opacity: 0.92 });
+const puffGeo = new THREE.IcosahedronGeometry(1, 1);
+const clouds = [];
+for (let k = 0; k < 6; k++) {
+  const g = new THREE.Group();
+  for (let p = 0; p < 4; p++) {
+    const m = new THREE.Mesh(puffGeo, cloudMat);
+    m.position.set((p - 1.5) * 0.9, rand() * 0.4, (rand() - 0.5) * 0.8);
+    m.scale.setScalar(0.6 + rand() * 0.6);
+    m.castShadow = true;
+    g.add(m);
+  }
+  g.position.set(-24 + k * 9 + rand() * 4, 9 + rand() * 2, -14 + rand() * 28);
+  world.add(g);
+  clouds.push({ g, v: 0.3 + rand() * 0.3 });
+}
+
+scene.updateMatrixWorld(true);
+const smokeGeo = new THREE.IcosahedronGeometry(0.28, 0);
+const puffs = [];
+for (const top of chimneyTops) {
+  const origin = top.getWorldPosition(new THREE.Vector3());
+  for (let k = 0; k < 8; k++) {
+    const mat = new THREE.MeshStandardMaterial({ color: "#f4f4f4", transparent: true, opacity: 0.7, flatShading: true, depthWrite: false });
+    const m = new THREE.Mesh(smokeGeo, mat);
+    scene.add(m);
+    puffs.push({ m, origin, age: k * 0.35, life: 2.8 });
+  }
+}
+
+/* ---------- theme ---------- */
+function applyTheme() {
+  THEME = App.isDark() ? THEMES.night : THEMES.day;
+  scene.background = new THREE.Color(THEME.sky);
+  waterMat.color.set(THEME.water);
+  hemi.color.set(THEME.hemiSky);
+  hemi.groundColor.set(THEME.hemiGround);
+  hemi.intensity = THEME.hemi;
+  sun.color.set(THEME.sun);
+  sun.intensity = THEME.sunI;
+  fog.color.set(THEME.sky);
+  cloudMat.color.set(THEME.cloud);
+  lampMat.color.set(THEME.lamp);
+  beaconMat.color.set(THEME.beam ? "#ffd57e" : "#fff6cc");
+  beam.visible = THEME.beam;
+  for (const p of puffs) p.m.material.color.set(THEME.smoke);
+  paintWindows();
+}
+
+/* ---------- camera moves ---------- */
+const homeZoom = () => (narrow() ? 1.1 : 1);
+// Overview centre sits a little toward downtown so the tall towers are not clipped at the top.
+const HOME_TARGET = new THREE.Vector3(-1.5, 0, -1.5);
+const fly = { active: false };
+function flyTo(pos, zoom, dur = 950, offsetTo = null) {
+  const offset = camera.position.clone().sub(controls.target);
+  Object.assign(fly, {
+    active: true, t0: performance.now(), dur: reduceMotion ? 1 : dur,
+    fromT: controls.target.clone(), toT: pos.clone(), fromZ: camera.zoom, toZ: zoom,
+    offset, fromO: offset.clone(), toO: (offsetTo || offset).clone(),
+  });
+}
+// Shift the focus point so the building stays visible beside (desktop) or above (phone) the detail panel.
+function framed(p, zoom) {
+  const w = host.clientWidth, h = host.clientHeight;
+  const wpp = (camera.top - camera.bottom) / zoom / h;
+  const off = camera.position.clone().sub(controls.target);
+  const fwd = new THREE.Vector3(-off.x, 0, -off.z).normalize();
+  const sinE = Math.sin(Math.atan2(off.y, Math.hypot(off.x, off.z)));
+  if (w < 721) return p.clone().addScaledVector(fwd, -((h * 0.6) / 2.4) * wpp / sinE);
+  const right = new THREE.Vector3().crossVectors(fwd, UP);
+  return p.clone().addScaledVector(right, ((Math.min(400, w * 0.42) + 16) / 2) * wpp);
+}
+function focus(key) {
+  const t = targets.get(key);
+  if (!t) return;
+  // Aim at the middle of the building, not its base, so tall towers stay in frame.
+  const box = new THREE.Box3().setFromObject(t.obj);
+  const p = t.obj.getWorldPosition(new THREE.Vector3());
+  p.y = t.obj === about || t.obj.parent === world ? 0 : Math.min(3, (box.max.y - box.min.y) / 2);
+  const zoom = t.zoom * (narrow() ? 0.72 : 1);
+  flyTo(framed(p, zoom), zoom);
+}
+controls.addEventListener("start", () => { fly.active = false; App.dismissHint(); });
+
+function clampTarget() {
+  const t = controls.target;
+  const cx = THREE.MathUtils.clamp(t.x, -14, 14), cz = THREE.MathUtils.clamp(t.z, -14, 18);
+  if (cx !== t.x || cz !== t.z) {
+    camera.position.x += cx - t.x;
+    camera.position.z += cz - t.z;
+    t.x = cx;
+    t.z = cz;
+  }
+}
+
+/* ---------- input ---------- */
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+function hitKey(ev) {
+  const r = renderer.domElement.getBoundingClientRect();
+  ndc.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, walk.on ? walkCam : camera);
+  for (const h of ray.intersectObjects(pickRoots, true)) {
+    let o = h.object;
+    while (o && !o.userData.key) o = o.parent;
+    if (o) return o.userData.key;
+  }
+  return null;
+}
+const el = renderer.domElement, pointers = new Set();
+let tap = null, hoverEvent = null, hovered = null;
+el.addEventListener("pointerdown", (e) => {
+  pointers.add(e.pointerId);
+  tap = pointers.size === 1 ? { x: e.clientX, y: e.clientY, t: performance.now() } : null;
+});
+el.addEventListener("pointerup", (e) => {
+  pointers.delete(e.pointerId);
+  if (!tap) return;
+  const isTap = Math.hypot(e.clientX - tap.x, e.clientY - tap.y) < 8 && performance.now() - tap.t < 450;
+  tap = null;
+  if (!isTap) return;
+  const k = hitKey(e);
+  if (k) App.select(k);
+  else App.close();
+});
+el.addEventListener("pointercancel", (e) => { pointers.delete(e.pointerId); tap = null; });
+el.addEventListener("pointermove", (e) => { if (e.pointerType === "mouse") hoverEvent = e; });
+el.addEventListener("pointerleave", () => { hovered = null; el.style.cursor = ""; });
+
+/* ---------- walk mode: a street-level camera ---------- */
+const walkCam = new THREE.PerspectiveCamera(70, 1, 0.05, 140);
+const fog = new THREE.Fog("#cfe7f4", 12, 42);
+const EYE = 0.72, SPEED = 3.2, TURN = 2.2, R = 0.22;
+const walk = { on: false, busy: false, yaw: 0, pitch: 0, pos: new THREE.Vector3(), keys: new Set(), downAt: {}, stick: { x: 0, y: 0 }, step: 0, near: null, turnTo: null, look: null };
+const hasItems = new Set([...targets.values()].filter((t) => t.obj.parent !== world).map((t) => t.obj.parent.userData.key));
+document.body.classList.toggle("touch", coarse);
+
+// The island, plus the first stretch of the pier. Buildings and trees use the same footprints that keep trees apart.
+function walkable(x, z) {
+  if (!(Math.abs(x) < 12.6 && Math.abs(z) < 12.6) && !(Math.abs(x) < 1.15 && z > 0 && z < 13.5)) return false;
+  if (Math.hypot(x, z) < 1.1 + R || Math.hypot(x - 1.3, z - 0.75) < 0.3 + R) return false; // fountain, the waving figure
+  if (poles.some(([px, pz]) => Math.hypot(x - px, z - pz) < 0.06 + R)) return false;
+  const p = R * 0.4;
+  return !blocked.some(([a, b, c, d]) => x > a - p && x < c + p && z > b - p && z < d + p);
+}
+const placePos = (key) => targets.get(key).obj.getWorldPosition(new THREE.Vector3()).setY(0);
+const placeName = (key) => labels.find((l) => l.key === key)?.b.textContent || districtInfo[key]?.label || key;
+const faceYaw = (from, to) => Math.atan2(-(to.x - from.x), -(to.z - from.z));
+const fwdOf = (yaw) => new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
+
+// The place you are standing at and roughly looking toward; buildings win over the district around them.
+function nearestPlace() {
+  const fwd = fwdOf(walk.yaw);
+  let best = null, bestScore = Infinity;
+  for (const [key, t] of targets) {
+    const isItem = t.obj.parent !== world;
+    const reach = isItem ? 4.2 : key === "about" ? 3.6 : key === "contact" ? 4.2 : hasItems.has(key) && key !== "education" ? 0 : 5.2;
+    if (!reach) continue;
+    const p = placePos(key), d = Math.hypot(p.x - walk.pos.x, p.z - walk.pos.z);
+    if (d > reach) continue;
+    const to = p.sub(walk.pos).setY(0).normalize();
+    const score = d - 1.5 * to.dot(fwd) - (isItem ? 0.8 : 0);
+    if (score < bestScore) { bestScore = score; best = key; }
+  }
+  return best;
+}
+const openBtn = document.getElementById("walk-open");
+const nearSay = Object.assign(document.createElement("span"), { className: "sr" });
+nearSay.setAttribute("aria-live", "polite");
+nearSay.style.cssText = "position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap";
+openBtn.after(nearSay);
+function setNear(key) {
+  if (key === walk.near) return;
+  walk.near = key;
+  openBtn.classList.toggle("show", !!key);
+  if (!key) return;
+  openBtn.querySelector("b").textContent = `Open: ${placeName(key)}`;
+  nearSay.textContent = `${placeName(key)} is in front of you. Press E to open it.`;
+}
+openBtn.addEventListener("click", () => { if (walk.near) App.select(walk.near); });
+
+function fadeSwap(fn) {
+  const f = document.getElementById("fade");
+  if (reduceMotion) { fn(); return; }
+  walk.busy = true;
+  f.classList.add("on");
+  setTimeout(() => { fn(); walk.busy = false; requestAnimationFrame(() => f.classList.remove("on")); }, 190);
+}
+function setWalk(on) {
+  if (on === walk.on || walk.busy || !readySent) return;
+  if (App.current) App.close();
+  fadeSwap(() => {
+    walk.on = on;
+    document.body.classList.toggle("walking", on);
+    const b = document.querySelector("[data-walk]");
+    b.setAttribute("aria-pressed", String(on));
+    b.setAttribute("aria-label", on ? "Back to the map" : "Walk around the city");
+    b.title = b.getAttribute("aria-label");
+    controls.enabled = !on;
+    renderPass.camera = on ? walkCam : camera;
+    hBlur.enabled = vBlur.enabled = !on;
+    scene.fog = on ? fog : null;
+    walk.keys.clear();
+    walk.stick.x = walk.stick.y = 0;
+    if (on) {
+      // Start on the south road, looking up at the fountain and the little waving figure.
+      walk.pos.set(0, 0, 6.4);
+      walk.yaw = 0;
+      walk.pitch = 0.04;
+      walk.turnTo = null;
+    } else {
+      setNear(null);
+      flyTo(HOME_TARGET, homeZoom(), 1, HOME);
+    }
+  });
+  App.dismissHint();
+  if (on) App.hint(coarse ? "Use the stick to walk · drag to look around" : "WASD or arrows to walk · drag to look · E to open · Esc for the map", 8000);
+  App.toast(on ? "Walking the city" : "Back to the map");
+}
+
+// Picking a place while walking takes you to a free spot in front of it, instead of flying the map camera.
+function walkTo(key) {
+  const t = targets.get(key);
+  if (!t) return;
+  const p = placePos(key), isItem = t.obj.parent !== world;
+  const lookUp = isItem ? 0.22 : 0.08;
+  if (Math.hypot(p.x - walk.pos.x, p.z - walk.pos.z) <= (isItem ? 3.6 : 6)) { walk.turnTo = faceYaw(walk.pos, p); return; }
+  let best = null, bd = Infinity;
+  for (const r of isItem ? [2.6, 3.2] : [4.5, 6, 7.5]) {
+    for (let i = 0; i < 24; i++) {
+      const a = (i / 24) * Math.PI * 2, x = p.x + Math.cos(a) * r, z = p.z + Math.sin(a) * r;
+      if (!walkable(x, z)) continue;
+      const d = Math.hypot(x - walk.pos.x, z - walk.pos.z);
+      if (d < bd) { bd = d; best = [x, z]; }
+    }
+    if (best) break;
+  }
+  if (!best) return;
+  fadeSwap(() => {
+    walk.pos.set(best[0], 0, best[1]);
+    walk.yaw = faceYaw(walk.pos, p);
+    walk.pitch = lookUp;
+    walk.turnTo = null;
+  });
+}
+
+function walkStep(dt) {
+  const k = walk.keys, run = k.has("shift") ? 1.7 : 1;
+  const ahead = (k.has("w") || k.has("arrowup") ? 1 : 0) - (k.has("s") || k.has("arrowdown") ? 1 : 0) - walk.stick.y;
+  const side = (k.has("d") ? 1 : 0) - (k.has("a") ? 1 : 0);
+  const turn = (k.has("arrowleft") ? 1 : 0) - (k.has("arrowright") ? 1 : 0) - walk.stick.x * 0.9;
+  if (turn) walk.turnTo = null;
+  walk.yaw += turn * TURN * dt;
+  if (walk.turnTo !== null) {
+    const diff = Math.atan2(Math.sin(walk.turnTo - walk.yaw), Math.cos(walk.turnTo - walk.yaw));
+    walk.yaw += reduceMotion ? diff : diff * Math.min(1, dt * 6);
+    if (Math.abs(diff) < 0.01) walk.turnTo = null;
+  }
+  const fwd = fwdOf(walk.yaw), right = new THREE.Vector3(Math.cos(walk.yaw), 0, -Math.sin(walk.yaw));
+  const v = fwd.multiplyScalar(ahead).addScaledVector(right, side);
+  if (v.lengthSq() > 1) v.normalize();
+  v.multiplyScalar(SPEED * run * dt);
+  // Slide along walls: try each axis on its own.
+  const moved = v.lengthSq() > 0;
+  if (walkable(walk.pos.x + v.x, walk.pos.z)) walk.pos.x += v.x;
+  if (walkable(walk.pos.x, walk.pos.z + v.z)) walk.pos.z += v.z;
+  if (moved) { walk.step += v.length() * 5; App.dismissHint(); }
+  const bob = reduceMotion ? 0 : Math.abs(Math.sin(walk.step)) * 0.035;
+  walkCam.position.set(walk.pos.x, EYE + bob, walk.pos.z);
+  walkCam.rotation.set(walk.pitch, walk.yaw, 0, "YXZ");
+  setNear(nearestPlace());
+}
+
+const WALK_KEYS = new Set(["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright", "shift"]);
+addEventListener("keydown", (e) => {
+  if (!walk.on || e.metaKey || e.ctrlKey || e.altKey || document.body.classList.contains("mode-resume")) return;
+  if (e.target.closest?.("#panel, input, textarea, select")) return;
+  const k = e.key.toLowerCase();
+  if (k === "e" || (k === "enter" && e.target === document.body)) {
+    e.preventDefault();
+    if (walk.near) App.select(walk.near);
+    else App.toast("Walk up to a building to open it");
+    return;
+  }
+  if (!WALK_KEYS.has(k)) return;
+  if (!walk.keys.has(k)) walk.downAt[k] = performance.now();
+  walk.keys.add(k);
+  if (k.startsWith("arrow")) e.preventDefault();
+});
+// a quick tap still counts as a short step
+addEventListener("keyup", (e) => {
+  const k = e.key.toLowerCase(), held = performance.now() - (walk.downAt[k] || 0);
+  setTimeout(() => walk.keys.delete(k), Math.max(0, 160 - held));
+});
+addEventListener("blur", () => walk.keys.clear());
+
+// Drag on the scene to look around; a short tap still picks a building.
+el.addEventListener("pointerdown", (e) => { if (walk.on) walk.look = { id: e.pointerId, x: e.clientX, y: e.clientY }; });
+el.addEventListener("pointermove", (e) => {
+  const l = walk.look;
+  if (!walk.on || !l || l.id !== e.pointerId) return;
+  walk.yaw -= (e.clientX - l.x) * 0.006;
+  walk.pitch = THREE.MathUtils.clamp(walk.pitch - (e.clientY - l.y) * 0.004, -0.6, 0.7);
+  l.x = e.clientX;
+  l.y = e.clientY;
+  walk.turnTo = null;
+});
+for (const ev of ["pointerup", "pointercancel"]) el.addEventListener(ev, (e) => { if (walk.look?.id === e.pointerId) walk.look = null; });
+
+// Touch stick: up walks forward, sideways turns.
+const stick = document.getElementById("stick"), knob = stick.firstElementChild;
+let stickId = null;
+function stickMove(e) {
+  const r = stick.getBoundingClientRect(), max = r.width / 2 - 14;
+  let x = e.clientX - (r.left + r.width / 2), y = e.clientY - (r.top + r.height / 2);
+  const l = Math.hypot(x, y);
+  if (l > max) { x *= max / l; y *= max / l; }
+  knob.style.transform = `translate(${x}px, ${y}px)`;
+  const dead = (n) => (Math.abs(n) < 0.12 ? 0 : n);
+  walk.stick.x = dead(x / max);
+  walk.stick.y = dead(y / max);
+}
+stick.addEventListener("pointerdown", (e) => {
+  stickId = e.pointerId;
+  try { stick.setPointerCapture(e.pointerId); } catch {}
+  stickMove(e);
+});
+stick.addEventListener("pointermove", (e) => { if (e.pointerId === stickId) stickMove(e); });
+function stickEnd(e) {
+  if (e.pointerId !== stickId) return;
+  stickId = null;
+  walk.stick.x = walk.stick.y = 0;
+  knob.style.transform = "";
+}
+stick.addEventListener("pointerup", stickEnd);
+stick.addEventListener("pointercancel", stickEnd);
+
+/* ---------- loop ---------- */
+function resize() {
+  const w = host.clientWidth, h = host.clientHeight;
+  if (!w || !h) return;
+  const a = w / h, viewH = Math.max(25, 33 / a);
+  Object.assign(camera, { left: (-viewH * a) / 2, right: (viewH * a) / 2, top: viewH / 2, bottom: -viewH / 2 });
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+  composer.setSize(w, h);
+  labelRenderer.setSize(w, h);
+  walkCam.aspect = a;
+  walkCam.fov = a < 1 ? 78 : 62;
+  walkCam.updateProjectionMatrix();
+  hBlur.uniforms.h.value = (coarse ? 4 : 5) / w;
+  vBlur.uniforms.v.value = (coarse ? 4 : 5) / h;
+}
+addEventListener("resize", resize);
+
+let intro = reduceMotion ? null : { t0: performance.now(), dur: 1900 };
+camera.zoom = intro ? 0.55 : homeZoom();
+camera.updateProjectionMatrix();
+controls.enabled = !intro;
+
+const clock = new THREE.Clock();
+const tmp = new THREE.Vector3();
+let readySent = false;
+function ready() {
+  if (readySent) return;
+  readySent = true;
+  App.cityReady();
+}
+
+function frame() {
+  const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime, now = performance.now();
+
+  if (intro) {
+    const k = Math.min(1, (now - intro.t0) / intro.dur), e = 1 - Math.pow(1 - k, 3);
+    camera.position.copy(controls.target).add(HOME.clone().applyAxisAngle(UP, -0.9 * (1 - e)));
+    camera.zoom = lerp(0.55, homeZoom(), e);
+    camera.updateProjectionMatrix();
+    if (k >= 1) { intro = null; controls.enabled = true; ready(); }
+  } else if (fly.active) {
+    const k = Math.min(1, (now - fly.t0) / fly.dur), e = ease(k);
+    controls.target.lerpVectors(fly.fromT, fly.toT, e);
+    camera.position.copy(controls.target).add(fly.offset.lerpVectors(fly.fromO, fly.toO, e));
+    camera.zoom = lerp(fly.fromZ, fly.toZ, e);
+    camera.updateProjectionMatrix();
+    if (k >= 1) fly.active = false;
+  }
+  controls.update();
+  clampTarget();
+  if (walk.on) walkStep(dt);
+
+  if (hoverEvent) {
+    hovered = hitKey(hoverEvent);
+    el.style.cursor = hovered ? "pointer" : "";
+    hoverEvent = null;
+  }
+  for (const g of liftables) {
+    const on = g.userData.key === hovered || g.userData.key === App.current;
+    const goal = g.userData.baseY + (on ? 0.22 : 0);
+    g.position.y += (goal - g.position.y) * Math.min(1, dt * 10);
+  }
+  const showSmall = camera.zoom > 1.5;
+  for (const l of labels) {
+    if (walk.on) {
+      // Street level: only nearby signs, so the sky is not full of floating labels.
+      const d = l.o.getWorldPosition(tmp).distanceTo(walkCam.position);
+      l.o.visible = l.key === App.current || d < (l.sm ? 7.5 : 16);
+    } else l.o.visible = !l.sm || showSmall || l.key === App.current;
+    const on = l.key === hovered || l.key === App.current;
+    if (on !== l.on) { l.on = on; l.b.classList.toggle("is-hot", on); }
+  }
+
+  // the campus clock shows the visitor's real time
+  const now2 = new Date(), mins = now2.getMinutes() + now2.getSeconds() / 60, hrs = (now2.getHours() % 12) + mins / 60;
+  for (const { hand, speed } of clockHands) hand.rotation.z = -((speed === 1 ? mins / 60 : hrs / 12) * Math.PI * 2);
+  if (!reduceMotion) {
+    for (const c of cars) {
+      c.s += c.v * dt;
+      if (c.s >= c.r.len) { c.r = route(); c.s = 0; }
+      along(c.r, c.s, c.g.position);
+      along(c.r, Math.min(c.s + 0.3, c.r.len), tmp);
+      if (tmp.distanceToSquared(c.g.position) > 1e-6) c.g.lookAt(tmp);
+      // While walking, cars shrink away as they near you instead of driving through the camera.
+      const near = walk.on ? THREE.MathUtils.clamp((c.g.position.distanceTo(walkCam.position) - 0.9) / 1.4, 0, 1) : 1;
+      c.g.scale.setScalar(Math.max(0.001, Math.min(1, c.s / 0.8, (c.r.len - c.s) / 0.8) * near));
+    }
+    for (const c of clouds) {
+      c.g.position.x += c.v * dt;
+      if (c.g.position.x > 28) c.g.position.x = -28;
+    }
+    for (const p of puffs) {
+      p.age = (p.age + dt) % p.life;
+      const k = p.age / p.life;
+      p.m.position.set(p.origin.x + k * 1.2, p.origin.y + k * 2.2, p.origin.z - k * 0.4);
+      p.m.scale.setScalar(0.6 + k * 1.6);
+      p.m.material.opacity = 0.7 * (1 - k);
+    }
+    for (const c of cranes) c.top.rotation.y = c.phase + Math.sin(t * c.speed) * 1.3;
+    jet.scale.set(1, 1 + Math.sin(t * 5) * 0.25, 1);
+    me.position.y = 0.16 + Math.abs(Math.sin(t * 2.2)) * 0.03;
+    const waving = t % 5 < 1.6;
+    arm.rotation.z = lerp(arm.rotation.z, waving ? 2.5 + Math.sin(t * 10) * 0.35 : 0.15, Math.min(1, dt * 8));
+    beamPivot.rotation.y += dt * 0.9;
+  }
+
+  composer.render();
+  labelRenderer.render(scene, walk.on ? walkCam : camera);
+  keepLabelsOnScreen();
+  if (!intro) ready();
+}
+
+// District labels near the island's edge can spill off a narrow screen; slide them back in.
+function keepLabelsOnScreen() {
+  const W = host.clientWidth;
+  for (const l of labels) {
+    if (l.sm) continue;
+    const dx0 = l.dx || 0;
+    let dx = 0;
+    if (l.o.visible && !walk.on) {
+      const r = l.b.getBoundingClientRect(), left = r.left - dx0, right = r.right - dx0;
+      if (r.width) dx = left < 8 ? 8 - left : right > W - 8 ? W - 8 - right : 0;
+    }
+    if (dx !== dx0) { l.dx = dx; l.b.style.translate = dx ? `${dx}px 0` : ""; }
+  }
+}
+
+function pause(p) {
+  renderer.setAnimationLoop(p ? null : frame);
+  if (!p) clock.getDelta();
+}
+
+applyTheme();
+setActivity(App.activity || { commits: null });
+resize();
+App.city = {
+  focus: (key) => (walk.on ? walkTo(key) : focus(key)),
+  overview: () => { if (!walk.on) flyTo(HOME_TARGET, homeZoom()); },
+  toggleWalk: () => setWalk(!walk.on),
+  exitWalk: () => setWalk(false),
+  zoomBy: (f) => flyTo(controls.target.clone(), THREE.MathUtils.clamp(camera.zoom * f, controls.minZoom, controls.maxZoom), 300),
+  resetView: () => flyTo(HOME_TARGET, homeZoom(), 900, HOME),
+  pause,
+  resize,
+  setTheme: applyTheme,
+  setActivity,
+};
+pause(document.body.classList.contains("mode-resume"));
+if (document.body.classList.contains("mode-resume")) ready();
+</script>
+</body>
+</html>
