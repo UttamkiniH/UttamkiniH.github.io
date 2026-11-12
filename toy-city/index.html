@@ -912,6 +912,12 @@ renderActivity();
 const startHash = location.hash.slice(1);
 if (startHash === "recruiter" || (!startHash && store.get("toycity.mode") === "resume")) setMode("resume");
 else if (startHash) App.pendingKey = startHash.replace("-", ":");
+// links like #recruiter or #project-0 also work on a page that is already open
+addEventListener("hashchange", () => {
+  const h = location.hash.slice(1);
+  if (h === "recruiter") setMode("resume");
+  else if (h && App.city) { if (document.body.classList.contains("mode-resume")) setMode("city"); App.select(h.replace("-", ":")); }
+});
 
 loadActivity(CONTENT.github).then((a) => {
   App.activity = a;
