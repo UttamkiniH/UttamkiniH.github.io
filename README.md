@@ -5,7 +5,7 @@ Live at **https://uttamkinih.github.io**
 A portfolio you explore as a miniature toy city, with a plain one-page resume for recruiters, and two interactive case studies of client work:
 
 - **CoreSports:** follow one point from a wall hit to the reward, play a 30-second game, and see how rewards are kept from paying twice.
-- **My Ohana:** a family-tree playground running the app's own layout and relationship engines, ported to JavaScript.
+- **Family tree app:** a playground running the app's own layout and relationship engines, ported to JavaScript.
 
 Both clients approved showing these internals; identifiers, hosts and IDs in the case studies are illustrative.
 

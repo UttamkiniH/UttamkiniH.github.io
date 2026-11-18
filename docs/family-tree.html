@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
-<title>My Ohana Case Study</title>
-<meta name="description" content="The My Ohana family tree, running on the app's own layout engines ported from Dart: tap people, add relatives, switch to the list layout.">
+<title>Family Tree Case Study</title>
+<meta name="description" content="A family tree app, running on the app's own layout engines ported from Dart: tap people, add relatives, switch to the list layout.">
 <script>
   // Light by default; night only when the visitor picked it (on this page or another one of the site).
   { let t = null; try { t = localStorage.getItem("toycity.theme"); } catch {} document.documentElement.dataset.theme = t === "dark" ? "dark" : "light"; }
@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Figtree:wght@400;500;600;700&family=Manrope:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: case study, same frame as the CoreSports page. The tree sits on the Ohana building's "screen": a mint bezel around the app's own light canvas (the app has no dark mode, so only the page and bezel go dark). Right column: the selected person, the engine's output, the reader list. */
+/* Layout: case study, same frame as the CoreSports page. The tree sits on the family tree building's "screen": a mint bezel around the app's own light canvas (the app has no dark mode, so only the page and bezel go dark). Right column: the selected person, the engine's output, the reader list. */
 :root {
   --bg: #e9f3f8;
   --surface: #ffffff;
@@ -102,7 +102,7 @@ h1 { margin: 0; font: 700 clamp(28px, 4.4vw, 46px)/1.05 var(--font-display); let
 .stage { display: grid; grid-template-columns: minmax(0, 58fr) minmax(0, 42fr); gap: 20px; padding-block: 16px 40px; align-items: start; }
 .canvas-col { position: sticky; top: 60px; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .bezel, .canvas-box, .viewport { min-width: 0; }
-/* the Ohana building's screen: mint bezel, the app's canvas inside */
+/* the family tree building's screen: mint bezel, the app's canvas inside */
 .bezel { background: var(--pod-bg); border-radius: 24px; padding: 8px; }
 .canvas-box { position: relative; background: var(--t-canvas); border-radius: 16px; overflow: hidden; color: var(--t-text); }
 .canvas-box.full { position: fixed; inset: 0; z-index: 60; border-radius: 0; }
@@ -476,13 +476,13 @@ details.walk-more[open] > summary::after { content: " −"; }
     <a class="back" href="index.html#project-1">‹ Back to the city</a>
     <button class="icon-btn" id="theme-btn" type="button" aria-label="Switch to night"></button>
   </div>
-  <p class="eyebrow">Case study · GeekyAnts client work · My Ohana</p>
+  <p class="eyebrow">Case study · GeekyAnts client work · Family tree app</p>
   <h1>A family tree, drawn from relationships</h1>
   <p class="lede">Tap a person, add relatives, switch to the list layout. This runs the app's own layout engines, ported line for line from Dart and checked against the app's tests.</p>
   <dl class="stats" id="stats"></dl>
   <section class="mypart" aria-labelledby="mypart-h">
     <div class="mypart-head"><h2 id="mypart-h">My part</h2><p class="mypart-when">Since Oct 2026 · GeekyAnts</p></div>
-    <p>I lead Flutter development on My Ohana: the interactive family tree, its layout engines and the add-relative seats, plus Scrolls, the photo and video feed.</p>
+    <p>I lead Flutter development on a family tree app: the interactive tree, its layout engines and the add-relative seats, plus a photo and video feed.</p>
     <p>Part 2 of How the engine works explains the app's backend code that turns links into words like Mother, which the tree depends on. This page runs the real engines, ported to JavaScript and checked against the app's tests: all 62 layout engine tests and all 65 kinship test cases pass.</p>
   </section>
 </header>
@@ -567,14 +567,14 @@ details.walk-more[open] > summary::after { content: " −"; }
   </form>
 </dialog>
 <p class="sr-only" id="announce" role="status" aria-live="polite"></p>
-<footer class="wrap foot">The engines in ohana-engine.js are a line-for-line JavaScript port of the app's Dart. All 62 of its engine tests pass against the port, and it matches the Dart output on 185 families. The family is made up. Captions such as Mother come from ohana-kinship.js, a port of the server's kinship code that passes all 65 of its test cases. The app gets them from its server.</footer>
+<footer class="wrap foot">The engines in tree-engine.js are a line-for-line JavaScript port of the app's Dart. All 62 of its engine tests pass against the port, and it matches the Dart output on 185 families. The family is made up. Captions such as Mother come from kinship.js, a port of the server's kinship code that passes all 65 of its test cases. The app gets them from its server.</footer>
 
-<script src="ohana-engine.js"></script>
-<script src="ohana-data.js"></script>
-<script src="ohana-kinship.js"></script>
+<script src="tree-engine.js"></script>
+<script src="tree-data.js"></script>
+<script src="kinship.js"></script>
 <script>
-const E = window.OhanaEngine, O = window.OHANA_DATA || {};
-const KIN = window.OhanaKinship;
+const E = window.TreeEngine, O = window.TREE_DATA || {};
+const KIN = window.TreeKinship;
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const motionMQ = matchMedia("(prefers-reduced-motion: reduce)");
@@ -634,7 +634,7 @@ const parentsOf = (id) => fam.edges.filter((e) => e.type === "parentOf" && e.per
 const childrenOf = (id) => fam.edges.filter((e) => e.type === "parentOf" && e.person1Id === id).map((e) => e.person2Id);
 const partnersOf = (id) => fam.edges.filter((e) => e.type === "partnerOf" && (e.person1Id === id || e.person2Id === id)).map((e) => (e.person1Id === id ? e.person2Id : e.person1Id));
 
-/* Relation captions: the server's kinship rules (ohana-kinship.js, ported from kinship.service.ts), run from me. */
+/* Relation captions: the server's kinship rules (kinship.js, ported from kinship.service.ts), run from me. */
 const KIN_TYPE = { parentOf: "parent_of", partnerOf: "partner_of", custom: "custom" };
 function captions() {
   const root = me(), out = new Map();
@@ -1633,7 +1633,7 @@ function buildWalk(host) {
 
 /* ---------- How relationship words are worked out ---------- */
 /* A second made-up family, drawn as a plain graph with one line per stored row. Every word, shape and
-   route on this part of the page comes from ohana-kinship.js, the JavaScript port of the server's
+   route on this part of the page comes from kinship.js, the JavaScript port of the server's
    derivation; nothing below is typed in. */
 const KIN_PEOPLE = [
   // id, first name, gender, column, row (drawing position only)
@@ -1799,7 +1799,7 @@ function buildKinWalk(host, C) {
   // The words the copy leans on; if the port ever disagrees, say so in the console.
   const expect = { "ada>leo": "father", "ada>remy": "first cousin", "ada>felix": "brother", "ada>milo": "half-brother", "ada>dario": "step-father", "juno>sky": "parent", "remy>hilde": "guardian", "remy>leo": "uncle", "leo>ines": "relative", "sky>leo": "father-in-law" };
   const off = Object.entries(expect).filter(([k, v]) => { const [a, b] = k.split(">"); return word(a, b) !== v; });
-  if (off.length || toRemy.shape !== "UUDD" || remyLeo.shape !== "UUD" || depth.rosa !== 3 || depth.remy !== 4) console.warn("How tab: the kinship walkthrough's words no longer match ohana-kinship.js", off);
+  if (off.length || toRemy.shape !== "UUDD" || remyLeo.shape !== "UUD" || depth.rosa !== 3 || depth.remy !== 4) console.warn("How tab: the kinship walkthrough's words no longer match kinship.js", off);
 
   const steps = [
     {
@@ -2027,7 +2027,7 @@ function renderHow() {
   <section class="walk kin-walk" aria-labelledby="kin-h">
     <p class="how-part">Part 2 · Relationship words</p>
     <h2 id="kin-h">How the app knows who is your aunt</h2>
-    <p class="intro">The tree shows a word under each person, such as Mother. That word comes from the app's backend, and this part walks through the backend's code, which the tree depends on. The database stores people and the links between them, never words like father or step-sister. The server works the word out each time, from the links and from who is looking. Below, a made-up family of twelve runs through <code>ohana-kinship.js</code>, a JavaScript port of the server's own code.</p>
+    <p class="intro">The tree shows a word under each person, such as Mother. That word comes from the app's backend, and this part walks through the backend's code, which the tree depends on. The database stores people and the links between them, never words like father or step-sister. The server works the word out each time, from the links and from who is looking. Below, a made-up family of twelve runs through <code>kinship.js</code>, a JavaScript port of the server's own code.</p>
     <div id="kinwalk"></div>
   </section>
   <section class="walk" aria-labelledby="kinx-h">
@@ -2083,7 +2083,7 @@ function renderHow() {
     buildKinWalk($("#kinwalk"), C);
     buildKinExplorer($("#kinx"), C);
   } else {
-    for (const id of ["#kinwalk", "#kinx"]) $(id).innerHTML = '<p class="kin-note">ohana-kinship.js is missing next to this page, so this part cannot run.</p>';
+    for (const id of ["#kinwalk", "#kinx"]) $(id).innerHTML = '<p class="kin-note">kinship.js is missing next to this page, so this part cannot run.</p>';
   }
   buildWalk($("#walk"));
 }
@@ -2114,7 +2114,7 @@ let resizeT;
 addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (view) render(false); }, 150); });
 
 if (!E) {
-  $("#stage").innerHTML = '<div class="panel"><h2>The layout engine did not load.</h2><p class="sub">ohana-engine.js is missing next to this page.</p><button class="btn primary" type="button" onclick="location.reload()">Reload</button></div>';
+  $("#stage").innerHTML = '<div class="panel"><h2>The layout engine did not load.</h2><p class="sub">tree-engine.js is missing next to this page.</p><button class="btn primary" type="button" onclick="location.reload()">Reload</button></div>';
 } else {
   fam = freshFamily();
   render(false);

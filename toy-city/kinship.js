@@ -1,7 +1,7 @@
 /*
- * ohana-kinship.js
+ * kinship.js
  *
- * The My Ohana kinship derivation, ported from the NestJS backend (English only):
+ * The family tree app's kinship derivation, ported from the NestJS backend (English only):
  *
  *   apps/backend/src/relationships/kinship-path-finder.ts          the walk (findRoutes, enumerate, buildAdjacency)
  *   apps/backend/src/relationships/kinship-shape.ts                bucketFor, parentsOf, sharedParents, counters
@@ -20,7 +20,7 @@
  *
  * parent_of: person1 is the parent. partner_of: undirected. custom: person1 is the role's subject.
  *
- * A plain script like ohana-engine.js: defines window.OhanaKinship (globalThis in Node, and
+ * A plain script like tree-engine.js: defines window.TreeKinship (globalThis in Node, and
  * module.exports for require()).
  */
 (function (root) {
@@ -494,7 +494,7 @@
     return results;
   }
 
-  var OhanaKinship = {
+  var TreeKinship = {
     MAX_DEPTH: MAX_DEPTH,
     MAX_TERMINAL_PREFIX: MAX_TERMINAL_PREFIX,
     KINSHIP_RELATIONS: KINSHIP_RELATIONS,
@@ -513,6 +513,6 @@
     deriveFromGraph: deriveFromGraph,
   };
 
-  root.OhanaKinship = OhanaKinship;
-  if (typeof module !== 'undefined' && module.exports) module.exports = OhanaKinship;
+  root.TreeKinship = TreeKinship;
+  if (typeof module !== 'undefined' && module.exports) module.exports = TreeKinship;
 })(typeof window !== 'undefined' ? window : globalThis);

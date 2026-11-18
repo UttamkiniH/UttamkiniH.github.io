@@ -1,7 +1,7 @@
-// Verified from the My Ohana source. Rules and decisions only; no source code.
-window.OHANA_DATA = {
+// Verified from the app's source. Rules and decisions only; no source code.
+window.TREE_DATA = {
   "product": {
-    "name": "My Ohana",
+    "name": "Family tree app",
     "oneLiner": "A mobile app where a family keeps its records, documents, memories and messages, organised around a shared family tree with access rules."
   },
   "role": "I wrote the tree layout spec and built the layout engines: the hourglass canvas, the indented vertical chart and the add-relative focus layer, plus the canvas rendering and their tests.",

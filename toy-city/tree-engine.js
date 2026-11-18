@@ -1,7 +1,7 @@
 /*
- * ohana-engine.js
+ * tree-engine.js
  *
- * The My Ohana family-tree layout engines, ported line for line from the Flutter app's Dart:
+ * The family tree app's layout engines, ported line for line from the Flutter app's Dart:
  *
  *   lib/features/tree/domain/tree_layout.dart      layoutTree, closeFamilyOf   (the "hourglass" canvas)
  *   lib/features/tree/domain/vertical_layout.dart  layoutVertical, collapseVertical, branchesOf, ...
@@ -12,8 +12,8 @@
  *
  * The rules are written up in apps/documentation/docs/mobile/tree-layout.md.
  *
- * A plain script: no modules, no build. It defines window.OhanaEngine in a browser and
- * globalThis.OhanaEngine elsewhere (Node: require('./ohana-engine.js') also returns it).
+ * A plain script: no modules, no build. It defines window.TreeEngine in a browser and
+ * globalThis.TreeEngine elsewhere (Node: require('./tree-engine.js') also returns it).
  *
  * Data shapes. Freezed classes become plain objects with the same field names; enums become the
  * Dart enum names as strings (EdgeType.parentOf === 'parentOf').
@@ -1624,7 +1624,7 @@
 
   // ---------------------------------------------------------------------------------------------
 
-  var OhanaEngine = {
+  var TreeEngine = {
     // tree_layout.dart
     layoutTree: layoutTree,
     closeFamilyOf: closeFamilyOf,
@@ -1666,6 +1666,6 @@
     isPending: isPending,
   };
 
-  root.OhanaEngine = OhanaEngine;
-  if (typeof module !== 'undefined' && module.exports) module.exports = OhanaEngine;
+  root.TreeEngine = TreeEngine;
+  if (typeof module !== 'undefined' && module.exports) module.exports = TreeEngine;
 })(typeof window !== 'undefined' ? window : globalThis);

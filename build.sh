@@ -11,7 +11,7 @@ TITLE="Uttam Kini H · Senior Software Engineer"
 DESC="Flutter apps and the NestJS backends behind them. Explore my work as a toy city, or read the one-page resume."
 
 mkdir -p "$OUT"
-for f in coresports.html coresports-data.js ohana.html ohana-engine.js ohana-data.js ohana-kinship.js icon.svg og.png; do
+for f in coresports.html coresports-data.js family-tree.html tree-engine.js tree-data.js kinship.js icon.svg og.png; do
   cp "$SRC/$f" "$OUT/$f"
 done
 touch "$OUT/.nojekyll"
